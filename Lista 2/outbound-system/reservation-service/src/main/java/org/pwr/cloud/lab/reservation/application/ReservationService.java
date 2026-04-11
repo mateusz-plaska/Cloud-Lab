@@ -38,7 +38,7 @@ public class ReservationService {
                 stockRepository.save(updatedStock);
             }
 
-            reservationRabbitMqService.sendStockReserved(orderId);
+            reservationRabbitMqService.sendStockReserved(orderId, items);
         } catch (InsufficientStockException e) {
             log.error("Reservation failed for order {}: {}", orderId, e.getMessage());
             reservationRabbitMqService.sendAllocationFailed(orderId, e.getMessage());
