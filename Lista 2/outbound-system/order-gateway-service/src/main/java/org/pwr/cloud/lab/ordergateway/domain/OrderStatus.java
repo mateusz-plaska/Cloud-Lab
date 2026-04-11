@@ -8,8 +8,9 @@ import lombok.RequiredArgsConstructor;
 public enum OrderStatus {
     PLANNED("PLANNED"),
     IN_PROGRESS("IN_PROGRESS"),
-    COMPLETED("COMPLETED"),
     FAILED("FAILED"),
+    COMPLETED("COMPLETED"),
+    PACKED("PACKED"),
     READY("READY");
 
     private final String name;

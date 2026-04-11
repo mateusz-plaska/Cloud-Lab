@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class WebhookPublisher {
     public void sendWebhookNotification(OrderId orderId, String message) {
-        log.info(">>> WYŚLIJ WEBHOOK DO KLIENTA <<<");
-        log.info("Zamówienie: {}, Wiadomość: {}", orderId, message);
+        log.info(">>> SEND WEBHOOK TO CUSTOMER <<<");
+        log.info("Order: {}, Message: {}", orderId, message);
     }
 }

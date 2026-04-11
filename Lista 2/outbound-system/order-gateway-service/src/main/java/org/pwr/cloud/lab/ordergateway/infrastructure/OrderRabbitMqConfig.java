@@ -1,7 +1,6 @@
 package org.pwr.cloud.lab.ordergateway.infrastructure;
 
-import org.pwr.cloud.lab.common.domain.event.AllocationFailedEvent;
-import org.pwr.cloud.lab.common.domain.event.StockReservedEvent;
+import org.pwr.cloud.lab.common.domain.event.*;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Queue;
@@ -29,5 +28,25 @@ public class OrderRabbitMqConfig {
     @Bean
     public Binding allocationFailedBinding(Queue orderQueue, TopicExchange outboundExchange) {
         return BindingBuilder.bind(orderQueue).to(outboundExchange).with(AllocationFailedEvent.class.getSimpleName());
+    }
+
+    @Bean
+    public Binding pickedBinding(Queue orderQueue, TopicExchange outboundExchange) {
+        return BindingBuilder.bind(orderQueue).to(outboundExchange).with(OrderPickedEvent.class.getSimpleName());
+    }
+
+    @Bean
+    public Binding pickingFailedBinding(Queue orderQueue, TopicExchange outboundExchange) {
+        return BindingBuilder.bind(orderQueue).to(outboundExchange).with(OrderPickFailedEvent.class.getSimpleName());
+    }
+
+    @Bean
+    public Binding packingFinishedBinding(Queue orderQueue, TopicExchange outboundExchange) {
+        return BindingBuilder.bind(orderQueue).to(outboundExchange).with(PackingFinishedEvent.class.getSimpleName());
+    }
+
+    @Bean
+    public Binding shipmentCreatedBinding(Queue orderQueue, TopicExchange outboundExchange) {
+        return BindingBuilder.bind(orderQueue).to(outboundExchange).with(ShipmentCreatedEvent.class.getSimpleName());
     }
 }
