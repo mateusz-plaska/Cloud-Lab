@@ -2,7 +2,7 @@ package org.pwr.cloud.lab.common.messagebroker;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.pwr.cloud.lab.common.event.DomainEvent;
+import org.pwr.cloud.lab.common.domain.event.DomainEvent;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
