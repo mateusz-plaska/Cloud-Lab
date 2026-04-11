@@ -18,7 +18,7 @@ public class RabbitMqEventPublisher implements EventPublisher {
 
     @Override
     public void publish(DomainEvent event) {
-        var routingKey = event.getEventName();
+        var routingKey = event.getClass().getSimpleName();
         log.info("Publishing event [{}] to [{}]: {}", routingKey, exchangeName, event);
         rabbitTemplate.convertAndSend(exchangeName, routingKey, event);
     }
