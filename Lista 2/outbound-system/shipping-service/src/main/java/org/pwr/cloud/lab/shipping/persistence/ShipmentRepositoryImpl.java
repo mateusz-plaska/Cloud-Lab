@@ -28,6 +28,7 @@ public class ShipmentRepositoryImpl implements ShipmentRepository {
         return ShipmentDocument.builder()
                 .orderId(shipment.orderId().value())
                 .trackingNumber(shipment.trackingNumber().value())
+                .shippingCost(shipment.shippingCost())
                 .shippedAt(shipment.shippedAt())
                 .build();
     }
@@ -36,6 +37,7 @@ public class ShipmentRepositoryImpl implements ShipmentRepository {
         return Shipment.builder()
                 .orderId(OrderId.of(shipmentDocument.getOrderId()))
                 .trackingNumber(TrackingNumber.of(shipmentDocument.getTrackingNumber()))
+                .shippingCost(shipmentDocument.getShippingCost())
                 .shippedAt(shipmentDocument.getShippedAt())
                 .build();
     }

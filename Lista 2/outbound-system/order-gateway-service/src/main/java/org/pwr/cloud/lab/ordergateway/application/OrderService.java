@@ -3,6 +3,7 @@ package org.pwr.cloud.lab.ordergateway.application;
 import lombok.RequiredArgsConstructor;
 import org.pwr.cloud.lab.common.domain.id.CustomerId;
 import org.pwr.cloud.lab.common.domain.id.OrderId;
+import org.pwr.cloud.lab.common.exception.OrderNotFoundException;
 import org.pwr.cloud.lab.ordergateway.domain.Order;
 import org.pwr.cloud.lab.ordergateway.domain.OrderItem;
 import org.pwr.cloud.lab.ordergateway.domain.OrderRepository;
@@ -22,7 +23,7 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final RabbitMqService rabbitMqService;
 
-    public OrderId createOrder(CustomerId customerId, List<OrderItem> items, Map<String, String> metadata) {
+    public Order createOrder(CustomerId customerId, List<OrderItem> items, Map<String, String> metadata) {
         var order = Order.builder()
                 .orderId(OrderId.newInstance())
                 .customerId(customerId)
@@ -33,11 +34,11 @@ public class OrderService {
 
         orderRepository.save(order);
         rabbitMqService.sendOrderCreatedEvent(order.orderId(), order.items(), metadata);
-        return order.orderId();
+        return order;
     }
 
     public OrderQueryController.OrderReportDto getOrderReport(OrderId orderId) {
-        var order = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
+        var order = orderRepository.findById(orderId).orElseThrow(() -> new OrderNotFoundException(orderId));
 
         return new OrderQueryController.OrderReportDto(
                 order.orderId(),

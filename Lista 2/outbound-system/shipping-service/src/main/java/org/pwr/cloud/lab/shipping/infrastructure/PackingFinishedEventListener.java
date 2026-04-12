@@ -13,6 +13,6 @@ public class PackingFinishedEventListener {
 
     @RabbitListener(queues = "${rabbitmq.shipping.queue.name}")
     public void handlePackingFinishedEvent(PackingFinishedEvent event) {
-        shippingService.createShipment(event.orderId());
+        shippingService.createShipment(event);
     }
 }

@@ -3,6 +3,7 @@ package org.pwr.cloud.lab.ordergateway.application;
 import lombok.RequiredArgsConstructor;
 import org.pwr.cloud.lab.common.domain.id.OrderId;
 import org.pwr.cloud.lab.common.domain.id.TrackingNumber;
+import org.pwr.cloud.lab.common.exception.OrderNotFoundException;
 import org.pwr.cloud.lab.ordergateway.domain.OrderRepository;
 import org.pwr.cloud.lab.ordergateway.domain.OrderStatus;
 import org.pwr.cloud.lab.ordergateway.infrastructure.WebhookPublisher;
@@ -17,7 +18,7 @@ public class OrderUpdateService {
     private final WebhookPublisher webhookPublisher;
 
     public void updateStatus(OrderId orderId, OrderStatus newStatus, String reason) {
-        var order = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
+        var order = orderRepository.findById(orderId).orElseThrow(() -> new OrderNotFoundException(orderId));
 
         if (order.status().ordinal() >= newStatus.ordinal()) return;
 
@@ -30,7 +31,7 @@ public class OrderUpdateService {
     }
 
     public void finalizeOrder(OrderId orderId, TrackingNumber trackingNumber) {
-        var order = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
+        var order = orderRepository.findById(orderId).orElseThrow(() -> new OrderNotFoundException(orderId));
         var updatedOrder = order.toBuilder().status(OrderStatus.READY).build();
         updatedOrder.metadata().put("tracking_number", trackingNumber.value());
         orderRepository.save(updatedOrder);

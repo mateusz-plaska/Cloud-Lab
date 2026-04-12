@@ -5,6 +5,7 @@ import lombok.Getter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 @Document(collection = "shipments")
@@ -15,6 +16,8 @@ public class ShipmentDocument {
     private String orderId;
 
     private String trackingNumber;
+
+    private BigDecimal shippingCost;
 
     private Instant shippedAt;
 }

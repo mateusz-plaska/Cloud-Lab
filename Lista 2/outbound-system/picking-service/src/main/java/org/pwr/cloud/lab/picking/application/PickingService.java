@@ -5,6 +5,7 @@ import org.pwr.cloud.lab.common.domain.event.OutboundOrderCreatedEvent;
 import org.pwr.cloud.lab.common.domain.id.OrderId;
 import org.pwr.cloud.lab.common.domain.id.PickingTaskId;
 import org.pwr.cloud.lab.common.domain.id.ProductId;
+import org.pwr.cloud.lab.common.exception.PickingTaskNotFoundException;
 import org.pwr.cloud.lab.picking.domain.PickingItem;
 import org.pwr.cloud.lab.picking.domain.PickingStatus;
 import org.pwr.cloud.lab.picking.domain.PickingTask;
@@ -36,7 +37,7 @@ public class PickingService {
     public void pickItem(OrderId orderId, ProductId productId, int quantity) {
         var task = pickingTaskRepository
                 .findByOrderId(orderId)
-                .orElseThrow(() -> new RuntimeException("Picking task not found"));
+                .orElseThrow(() -> new PickingTaskNotFoundException(orderId));
 
         var updatedItems = task.items().stream()
                 .map(item -> item.productId().equals(productId)
@@ -63,7 +64,7 @@ public class PickingService {
     public void reportMissingItem(OrderId orderId, ProductId productId, String reason) {
         var task = pickingTaskRepository
                 .findByOrderId(orderId)
-                .orElseThrow(() -> new RuntimeException("Picking task not found"));
+                .orElseThrow(() -> new PickingTaskNotFoundException(orderId));
 
         var updatedTask = task.toBuilder().status(PickingStatus.FAILED).build();
 

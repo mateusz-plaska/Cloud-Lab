@@ -7,6 +7,7 @@ import org.pwr.cloud.lab.common.domain.id.CustomerId;
 import org.pwr.cloud.lab.common.domain.id.ProductId;
 import org.pwr.cloud.lab.ordergateway.application.OrderItemConverter;
 import org.pwr.cloud.lab.ordergateway.application.OrderService;
+import org.pwr.cloud.lab.ordergateway.domain.Order;
 import org.pwr.cloud.lab.ordergateway.infrastructure.FileMetadataParser;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -24,13 +25,13 @@ public class OrderController {
     private final FileMetadataParser fileParser;
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<String> createOrder(
+    public ResponseEntity<Order> createOrder(
             @RequestPart("data") @Valid CreateOrderRequestDto request, @RequestPart("file") MultipartFile file) {
         var metadata = fileParser.parse(file);
         metadata.put("_filename", file.getOriginalFilename());
         var orderItems = orderItemConverter.convert(request.items());
-        var orderId = orderService.createOrder(request.customerId, orderItems, metadata);
-        return ResponseEntity.ok("Order registered with ID: " + orderId);
+        var order = orderService.createOrder(request.customerId, orderItems, metadata);
+        return ResponseEntity.ok(order);
     }
 
     public record CreateOrderRequestDto(
