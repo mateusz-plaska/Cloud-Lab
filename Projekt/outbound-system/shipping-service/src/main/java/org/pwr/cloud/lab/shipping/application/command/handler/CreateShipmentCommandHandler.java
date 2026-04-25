@@ -1,9 +1,9 @@
-package org.pwr.cloud.lab.shipping.application;
+package org.pwr.cloud.lab.shipping.application.command.handler;
 
 import lombok.RequiredArgsConstructor;
-import org.pwr.cloud.lab.common.domain.model.BoxType;
-import org.pwr.cloud.lab.common.domain.model.id.OrderId;
+import org.pwr.cloud.lab.common.application.cqs.CommandHandler;
 import org.pwr.cloud.lab.common.domain.model.id.TrackingNumber;
+import org.pwr.cloud.lab.shipping.application.command.CreateShipmentCommand;
 import org.pwr.cloud.lab.shipping.domain.messaging.ShippingEventPublisher;
 import org.pwr.cloud.lab.shipping.domain.model.Shipment;
 import org.pwr.cloud.lab.shipping.domain.repository.ShipmentRepository;
@@ -13,16 +13,17 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
-public class ShippingService {
+public class CreateShipmentCommandHandler implements CommandHandler<CreateShipmentCommand, Void> {
     private final ShipmentRepository shipmentRepository;
     private final ShippingEventPublisher shippingEventPublisher;
 
-    public void createShipment(OrderId orderId, double weight, BoxType boxType) {
-        var shippingCost = Shipment.calculateShippingCost(weight, boxType);
+    @Override
+    @Transactional
+    public Void handle(CreateShipmentCommand command) {
+        var shippingCost = Shipment.calculateShippingCost(command.weight(), command.boxType());
         var shipment = Shipment.builder()
-                .orderId(orderId)
+                .orderId(command.orderId())
                 .trackingNumber(TrackingNumber.newInstance())
                 .shippingCost(shippingCost)
                 .shippedAt(Instant.now())
@@ -31,5 +32,6 @@ public class ShippingService {
         shipmentRepository.save(shipment);
         shippingEventPublisher.publishShipmentCreated(
                 shipment.orderId(), shipment.trackingNumber(), shipment.shippedAt());
+        return null;
     }
 }
