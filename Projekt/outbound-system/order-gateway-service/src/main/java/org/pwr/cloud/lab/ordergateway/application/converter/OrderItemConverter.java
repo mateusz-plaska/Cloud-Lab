@@ -1,4 +1,4 @@
-package org.pwr.cloud.lab.ordergateway.api.converter;
+package org.pwr.cloud.lab.ordergateway.application.converter;
 
 import org.pwr.cloud.lab.ordergateway.api.dto.OrderItemDto;
 import org.pwr.cloud.lab.ordergateway.domain.model.OrderItem;

@@ -2,11 +2,13 @@ package org.pwr.cloud.lab.ordergateway.api.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.pwr.cloud.lab.ordergateway.api.converter.OrderItemConverter;
+import org.pwr.cloud.lab.common.application.cqs.Mediator;
+import org.pwr.cloud.lab.common.domain.model.id.OrderId;
 import org.pwr.cloud.lab.ordergateway.api.dto.CreateOrderRequestDto;
-import org.pwr.cloud.lab.ordergateway.api.parser.FileMetadataParser;
-import org.pwr.cloud.lab.ordergateway.application.service.OrderService;
-import org.pwr.cloud.lab.ordergateway.domain.model.Order;
+import org.pwr.cloud.lab.ordergateway.api.dto.OrderReportDto;
+import org.pwr.cloud.lab.ordergateway.application.command.CreateOrderCommand;
+import org.pwr.cloud.lab.ordergateway.application.query.GetOrderQuery;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,17 +18,20 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/api/orders")
 @RequiredArgsConstructor
 public class OrderController {
-    private final OrderService orderService;
-    private final OrderItemConverter orderItemConverter;
-    private final FileMetadataParser fileParser;
+    private final Mediator mediator;
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Order> createOrder(
+    public ResponseEntity<OrderId> createOrder(
             @RequestPart("data") @Valid CreateOrderRequestDto request, @RequestPart("file") MultipartFile file) {
-        var metadata = fileParser.parse(file);
-        metadata.put("_filename", file.getOriginalFilename());
-        var orderItems = orderItemConverter.convert(request.items());
-        var order = orderService.createOrder(request.customerId(), orderItems, metadata);
-        return ResponseEntity.ok(order);
+        var command = new CreateOrderCommand(request.customerId(), request.items(), file);
+        var orderId = mediator.send(command);
+        return new ResponseEntity<>(orderId, HttpStatus.CREATED);
+    }
+
+    @GetMapping("/reports/{orderId}")
+    public ResponseEntity<OrderReportDto> getReport(@PathVariable @Valid OrderId orderId) {
+        var query = new GetOrderQuery(orderId);
+        var orderReportDto = mediator.ask(query);
+        return ResponseEntity.ok(orderReportDto);
     }
 }

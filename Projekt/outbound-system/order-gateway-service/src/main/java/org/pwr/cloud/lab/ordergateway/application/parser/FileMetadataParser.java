@@ -1,4 +1,4 @@
-package org.pwr.cloud.lab.ordergateway.api.parser;
+package org.pwr.cloud.lab.ordergateway.application.parser;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
