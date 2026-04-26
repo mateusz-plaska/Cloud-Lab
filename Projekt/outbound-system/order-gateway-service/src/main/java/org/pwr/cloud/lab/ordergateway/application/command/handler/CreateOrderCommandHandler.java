@@ -10,8 +10,13 @@ import org.pwr.cloud.lab.ordergateway.domain.messaging.OrderEventPublisher;
 import org.pwr.cloud.lab.ordergateway.domain.model.Order;
 import org.pwr.cloud.lab.ordergateway.domain.model.OrderStatus;
 import org.pwr.cloud.lab.ordergateway.domain.repository.OrderRepository;
+import org.pwr.cloud.lab.ordergateway.domain.storage.StorageService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.time.Instant;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -20,16 +25,16 @@ public class CreateOrderCommandHandler implements CommandHandler<CreateOrderComm
     private final OrderEventPublisher orderEventPublisher;
     private final OrderItemConverter orderItemConverter;
     private final FileMetadataParser fileParser;
+    private final StorageService storageService;
 
     @Override
     @Transactional
     public OrderId handle(CreateOrderCommand command) {
-        var metadata = fileParser.parse(command.file());
-        metadata.put("_filename", command.file().getOriginalFilename());
-
+        var orderId = OrderId.newInstance();
+        var metadata = parseMetadata(command.file(), orderId);
         var items = orderItemConverter.convert(command.items());
         var order = Order.builder()
-                .orderId(OrderId.newInstance())
+                .orderId(orderId)
                 .customerId(command.customerId())
                 .status(OrderStatus.PLANNED)
                 .items(items)
@@ -39,5 +44,17 @@ public class CreateOrderCommandHandler implements CommandHandler<CreateOrderComm
         orderRepository.save(order);
         orderEventPublisher.publishOrderCreated(order.orderId(), order.items(), order.metadata());
         return order.orderId();
+    }
+
+    private Map<String, String> parseMetadata(MultipartFile file, OrderId orderId) {
+        var metadata = fileParser.parse(file);
+        metadata.put("filename", file.getOriginalFilename());
+        metadata.put("file_size_bytes", String.valueOf(file.getSize()));
+        metadata.put("upload_date", Instant.now().toString());
+
+        var storageObjectKey = storageService.uploadFile(file, orderId);
+        metadata.put("file_storage_key", storageObjectKey);
+
+        return metadata;
     }
 }

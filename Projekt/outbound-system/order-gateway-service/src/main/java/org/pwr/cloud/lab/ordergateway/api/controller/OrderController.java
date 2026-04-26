@@ -7,7 +7,9 @@ import org.pwr.cloud.lab.common.domain.model.id.OrderId;
 import org.pwr.cloud.lab.ordergateway.api.dto.CreateOrderRequestDto;
 import org.pwr.cloud.lab.ordergateway.api.dto.OrderReportDto;
 import org.pwr.cloud.lab.ordergateway.application.command.CreateOrderCommand;
+import org.pwr.cloud.lab.ordergateway.application.query.GetOrderFileQuery;
 import org.pwr.cloud.lab.ordergateway.application.query.GetOrderQuery;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -33,5 +35,14 @@ public class OrderController {
         var query = new GetOrderQuery(orderId);
         var orderReportDto = mediator.ask(query);
         return ResponseEntity.ok(orderReportDto);
+    }
+
+    @GetMapping("/{orderId}/file")
+    public ResponseEntity<byte[]> getOrderFile(@PathVariable @Valid OrderId orderId) {
+        var query = new GetOrderFileQuery(orderId);
+        var fileDto = mediator.ask(query);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileDto.filename() + "\"")
+                .body(fileDto.content());
     }
 }
