@@ -19,7 +19,8 @@ public class GetOrderFileQueryHandler implements QueryHandler<GetOrderFileQuery,
     @Override
     @Transactional(readOnly = true)
     public OrderFileDto handle(GetOrderFileQuery query) {
-        var order = orderRepository.findById(query.orderId())
+        var order = orderRepository
+                .findById(query.orderId())
                 .orElseThrow(() -> new OrderNotFoundException(query.orderId()));
 
         var storageFileKey = order.metadata().get("file_storage_key");

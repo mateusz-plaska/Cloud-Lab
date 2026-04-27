@@ -32,7 +32,8 @@ public class S3StorageService implements StorageService {
         } catch (S3Exception e) {
             if (e.statusCode() == 404) {
                 log.info("S3 Bucket '{}' not found. Creating a new one...", bucketName);
-                s3Client.createBucket(CreateBucketRequest.builder().bucket(bucketName).build());
+                s3Client.createBucket(
+                        CreateBucketRequest.builder().bucket(bucketName).build());
             } else {
                 log.error("Error accessing S3 bucket: {}", e.getMessage());
             }
@@ -61,10 +62,8 @@ public class S3StorageService implements StorageService {
     @Override
     public byte[] loadFile(String objectKey) {
         try {
-            var getObjectRequest = GetObjectRequest.builder()
-                    .bucket(bucketName)
-                    .key(objectKey)
-                    .build();
+            var getObjectRequest =
+                    GetObjectRequest.builder().bucket(bucketName).key(objectKey).build();
 
             return s3Client.getObject(getObjectRequest).readAllBytes();
         } catch (Exception e) {

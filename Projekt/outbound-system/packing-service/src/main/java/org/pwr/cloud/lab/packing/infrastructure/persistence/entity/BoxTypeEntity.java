@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 import org.pwr.cloud.lab.common.domain.model.BoxSize;
 
 @Entity
-@Table(name = "box_types", schema = "packing_schema")
+@Table(name = "box_types")
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor

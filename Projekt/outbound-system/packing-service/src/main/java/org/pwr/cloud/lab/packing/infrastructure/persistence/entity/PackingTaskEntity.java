@@ -9,7 +9,7 @@ import org.pwr.cloud.lab.common.domain.model.BoxSize;
 import org.pwr.cloud.lab.packing.domain.model.PackingStatus;
 
 @Entity
-@Table(name = "packing_tasks", schema = "packing_schema")
+@Table(name = "packing_tasks")
 @Builder(toBuilder = true)
 @Getter
 @AllArgsConstructor

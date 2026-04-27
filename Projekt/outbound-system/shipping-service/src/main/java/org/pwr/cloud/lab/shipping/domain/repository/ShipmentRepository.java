@@ -6,7 +6,7 @@ import org.pwr.cloud.lab.shipping.domain.model.Shipment;
 import java.util.Optional;
 
 public interface ShipmentRepository {
-    void save(Shipment shipment);
+    Shipment save(Shipment shipment);
 
     Optional<Shipment> findByOrderId(OrderId orderId);
 }

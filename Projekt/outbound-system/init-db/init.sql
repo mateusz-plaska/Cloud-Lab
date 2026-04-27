@@ -1,3 +1,0 @@
-CREATE SCHEMA IF NOT EXISTS order_schema;
-CREATE SCHEMA IF NOT EXISTS reservation_schema;
-CREATE SCHEMA IF NOT EXISTS packing_schema;

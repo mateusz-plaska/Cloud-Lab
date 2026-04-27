@@ -2,13 +2,12 @@ package org.pwr.cloud.lab.picking.domain.model;
 
 import lombok.Builder;
 import org.pwr.cloud.lab.common.domain.model.id.OrderId;
-import org.pwr.cloud.lab.common.domain.model.id.PickingTaskId;
 import org.pwr.cloud.lab.common.domain.model.id.ProductId;
 
 import java.util.List;
 
 @Builder(toBuilder = true)
-public record PickingTask(PickingTaskId pickingTaskId, OrderId orderId, PickingStatus status, List<PickingItem> items) {
+public record PickingTask(OrderId orderId, PickingStatus status, List<PickingItem> items) {
 
     public boolean isCompleted() {
         return items.stream().allMatch(PickingItem::isPicked);

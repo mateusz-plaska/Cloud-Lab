@@ -2,7 +2,6 @@ package org.pwr.cloud.lab.picking.application.command.handler;
 
 import lombok.RequiredArgsConstructor;
 import org.pwr.cloud.lab.common.application.cqs.CommandHandler;
-import org.pwr.cloud.lab.common.domain.model.id.PickingTaskId;
 import org.pwr.cloud.lab.picking.application.command.CreatePickingTaskCommand;
 import org.pwr.cloud.lab.picking.domain.model.PickingStatus;
 import org.pwr.cloud.lab.picking.domain.model.PickingTask;
@@ -19,7 +18,6 @@ public class CreatePickingTaskCommandHandler implements CommandHandler<CreatePic
     @Transactional
     public Void handle(CreatePickingTaskCommand command) {
         var pickingTask = PickingTask.builder()
-                .pickingTaskId(PickingTaskId.newInstance())
                 .orderId(command.orderId())
                 .status(PickingStatus.PLANNED)
                 .items(command.items())
