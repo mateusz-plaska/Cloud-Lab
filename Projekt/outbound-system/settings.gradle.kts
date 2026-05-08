@@ -1,8 +1,18 @@
 rootProject.name = "outbound-system"
 
 include("common")
-include("order-gateway-service")
-include("reservation-service")
-include("picking-service")
-include("packing-service")
-include("shipping-service")
+
+val services = listOf(
+    "order-gateway-service",
+    "packing-service",
+    "picking-service",
+    "reservation-service",
+    "shipping-service"
+)
+
+for (service in services) {
+    val serviceDir = File(rootDir, service)
+    if (serviceDir.exists()) {
+        include(service)
+    }
+}
