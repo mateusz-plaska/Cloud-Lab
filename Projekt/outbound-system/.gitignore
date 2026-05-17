@@ -43,3 +43,8 @@ bin/
 .DS_Store
 
 .env
+*.tfvars
+*.tfplan
+**/.terraform/*
+*.tfstate
+*.tfstate.*
