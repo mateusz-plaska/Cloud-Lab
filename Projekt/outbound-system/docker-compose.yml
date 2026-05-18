@@ -54,6 +54,17 @@ services:
     networks:
       - outbound-net
 
+  bff-service:
+    image: mateuszplaska/bff-service:latest
+    build:
+      context: .
+      dockerfile: bff-service/Dockerfile
+    ports:
+      - "8080:8080"
+    env_file: .env
+    networks:
+      - outbound-net
+
 networks:
   outbound-net:
     driver: bridge
