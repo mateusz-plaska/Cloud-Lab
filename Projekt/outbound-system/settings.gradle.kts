@@ -7,7 +7,8 @@ val services = listOf(
     "packing-service",
     "picking-service",
     "reservation-service",
-    "shipping-service"
+    "shipping-service",
+    "bff-service",
 )
 
 for (service in services) {

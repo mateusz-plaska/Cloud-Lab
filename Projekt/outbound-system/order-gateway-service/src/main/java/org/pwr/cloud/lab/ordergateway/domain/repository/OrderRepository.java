@@ -1,5 +1,6 @@
 package org.pwr.cloud.lab.ordergateway.domain.repository;
 
+import org.pwr.cloud.lab.common.domain.model.id.CustomerId;
 import org.pwr.cloud.lab.common.domain.model.id.OrderId;
 import org.pwr.cloud.lab.ordergateway.domain.model.Order;
 
@@ -12,4 +13,6 @@ public interface OrderRepository {
     Optional<Order> findById(OrderId id);
 
     List<Order> findAll();
+
+    List<Order> findByCustomerId(CustomerId customerId);
 }
