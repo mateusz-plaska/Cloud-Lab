@@ -1,0 +1,49 @@
+<div class="flex min-h-screen items-center justify-center bg-slate-900">
+  <div class="w-full max-w-sm rounded-xl bg-white p-8 shadow-lg">
+    <h1 class="mb-2 text-2xl font-bold text-slate-900">Logowanie</h1>
+    <p class="mb-6 text-sm text-slate-500">Warehouse Management System</p>
+
+    <form (ngSubmit)="submit()">
+      <div class="mb-4">
+        <label class="mb-1 block text-sm font-medium text-slate-700">Użytkownik</label>
+        <input
+          type="text"
+          name="username"
+          [(ngModel)]="username"
+          autocomplete="username"
+          required
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+        />
+      </div>
+
+      <div class="mb-6">
+        <label class="mb-1 block text-sm font-medium text-slate-700">Hasło</label>
+        <input
+          type="password"
+          name="password"
+          [(ngModel)]="password"
+          autocomplete="current-password"
+          required
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+        />
+      </div>
+
+      @if (error()) {
+        <p class="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{{ error() }}</p>
+      }
+
+      <button
+        type="submit"
+        [disabled]="loading()"
+        class="w-full rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700 disabled:opacity-50"
+      >
+        {{ loading() ? 'Logowanie...' : 'Zaloguj' }}
+      </button>
+    </form>
+
+    <p class="mt-4 text-center text-sm text-slate-500">
+      Nie masz konta?
+      <a routerLink="/register" class="font-medium text-indigo-600 hover:text-indigo-700">Zarejestruj się</a>
+    </p>
+  </div>
+</div>

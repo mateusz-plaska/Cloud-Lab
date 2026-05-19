@@ -1,0 +1,73 @@
+import { Injectable, computed, inject, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
+import { API_URL } from '../api';
+import type { AuthResponse, AuthUser, LoginRequest, RegisterRequest, Role } from '../../types';
+
+const TOKEN_KEY = 'auth_token';
+const USER_KEY = 'auth_user';
+
+@Injectable({ providedIn: 'root' })
+export class AuthService {
+  private readonly http = inject(HttpClient);
+  private readonly router = inject(Router);
+
+  private readonly _token = signal<string | null>(localStorage.getItem(TOKEN_KEY));
+  private readonly _user = signal<AuthUser | null>(this.loadUser());
+
+  readonly token = this._token.asReadonly();
+  readonly user = this._user.asReadonly();
+  readonly isAuthenticated = computed(() => this._token() !== null);
+
+  async login(request: LoginRequest): Promise<void> {
+    const response = await firstValueFrom(
+      this.http.post<AuthResponse>(`${API_URL}/auth/login`, request),
+    );
+    this.saveSession(response);
+  }
+
+  async register(request: RegisterRequest): Promise<void> {
+    const response = await firstValueFrom(
+      this.http.post<AuthResponse>(`${API_URL}/auth/register`, request),
+    );
+    this.saveSession(response);
+  }
+
+  logout(): void {
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
+    this._token.set(null);
+    this._user.set(null);
+    this.router.navigate(['/login']);
+  }
+
+  hasRole(role: Role): boolean {
+    return this._user()?.role === role;
+  }
+
+  hasAnyRole(...roles: Role[]): boolean {
+    return roles.some((r) => this.hasRole(r));
+  }
+
+  isOperatorOrAdmin(): boolean {
+    return this.hasAnyRole('OPERATOR', 'ADMIN');
+  }
+
+  private saveSession(response: AuthResponse): void {
+    const user: AuthUser = {
+      userId: response.userId,
+      username: response.username,
+      role: response.role as Role,
+    };
+    localStorage.setItem(TOKEN_KEY, response.token);
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
+    this._token.set(response.token);
+    this._user.set(user);
+  }
+
+  private loadUser(): AuthUser | null {
+    const raw = localStorage.getItem(USER_KEY);
+    return raw ? (JSON.parse(raw) as AuthUser) : null;
+  }
+}

@@ -1,0 +1,63 @@
+<div class="p-8">
+  <div class="mb-6 flex items-center justify-between">
+    <h2 class="text-2xl font-bold text-slate-900">Zamówienia</h2>
+    @if (auth.hasRole('USER')) {
+      <a
+        routerLink="/orders/new"
+        class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+      >
+        + Nowe zamówienie
+      </a>
+    }
+  </div>
+
+  @if (loading()) {
+    <p class="text-slate-500">Ładowanie...</p>
+  } @else if (error()) {
+    <p class="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">{{ error() }}</p>
+  } @else if (orders().length === 0) {
+    <p class="text-slate-500">Brak zamówień.</p>
+  } @else {
+    <div class="overflow-hidden rounded-xl bg-white shadow-sm">
+      <table class="w-full text-sm">
+        <thead class="border-b border-slate-200 bg-slate-50">
+          <tr>
+            <th class="px-6 py-3 text-left font-semibold text-slate-600">ID zamówienia</th>
+            <th class="px-6 py-3 text-left font-semibold text-slate-600">Klient</th>
+            <th class="px-6 py-3 text-left font-semibold text-slate-600">Status</th>
+            <th class="px-6 py-3 text-left font-semibold text-slate-600">Pozycje</th>
+            <th class="px-6 py-3 text-left font-semibold text-slate-600">Utworzono</th>
+            <th class="px-6 py-3"></th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          @for (order of orders(); track order.orderId) {
+            <tr class="hover:bg-slate-50">
+              <td class="px-6 py-4 font-mono text-xs text-slate-600">
+                {{ order.orderId | slice: 0 : 8 }}...
+              </td>
+              <td class="px-6 py-4 font-mono text-xs text-slate-600">
+                {{ order.customerId | slice: 0 : 8 }}...
+              </td>
+              <td class="px-6 py-4">
+                <span class="rounded-full px-2 py-1 text-xs font-medium" [class]="statusClass(order.status)">
+                  {{ order.status }}
+                </span>
+              </td>
+              <td class="px-6 py-4 text-slate-600">{{ order.itemCount }}</td>
+              <td class="px-6 py-4 text-slate-500">{{ formatDate(order.createdAt) }}</td>
+              <td class="px-6 py-4 text-right">
+                <a
+                  [routerLink]="['/orders', order.orderId]"
+                  class="text-indigo-600 hover:text-indigo-800"
+                >
+                  Szczegóły →
+                </a>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

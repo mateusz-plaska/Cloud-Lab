@@ -1,0 +1,86 @@
+<div class="p-8">
+  <h2 class="mb-6 text-2xl font-bold text-slate-900">Picking</h2>
+
+  <div class="grid gap-6 lg:grid-cols-2">
+    <div class="rounded-xl bg-white p-6 shadow-sm">
+      <h3 class="mb-4 font-semibold text-slate-700">Zamówienia do pickowania</h3>
+      @if (loading()) {
+        <p class="text-sm text-slate-500">Ładowanie...</p>
+      } @else if (orders().length === 0) {
+        <p class="text-sm text-slate-500">Brak zamówień ze statusem RESERVED</p>
+      } @else {
+        <ul class="space-y-2">
+          @for (order of orders(); track order.orderId) {
+            <li
+              class="flex cursor-pointer items-center justify-between rounded-lg border px-4 py-3 transition-colors hover:bg-indigo-50"
+              [class.border-indigo-500]="selectedOrderId === order.orderId"
+              [class.border-slate-200]="selectedOrderId !== order.orderId"
+              (click)="selectedOrderId = order.orderId"
+            >
+              <span class="font-mono text-xs text-slate-700">{{ order.orderId | slice: 0 : 12 }}...</span>
+              <span class="text-xs text-slate-500">{{ order.itemCount }} poz.</span>
+            </li>
+          }
+        </ul>
+      }
+    </div>
+
+    <div class="rounded-xl bg-white p-6 shadow-sm">
+      <h3 class="mb-4 font-semibold text-slate-700">Akcja</h3>
+
+      <div class="mb-4">
+        <label class="mb-1 block text-sm font-medium text-slate-700">ID produktu</label>
+        <input
+          type="text"
+          [(ngModel)]="productId"
+          placeholder="uuid produktu"
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+        />
+      </div>
+
+      <div class="mb-4">
+        <label class="mb-1 block text-sm font-medium text-slate-700">Ilość</label>
+        <input
+          type="number"
+          [(ngModel)]="quantity"
+          min="1"
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+        />
+      </div>
+
+      <div class="mb-6">
+        <label class="mb-1 block text-sm font-medium text-slate-700">Powód błędu (dla FAIL)</label>
+        <input
+          type="text"
+          [(ngModel)]="failReason"
+          placeholder="brak towaru, uszkodzony..."
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+        />
+      </div>
+
+      @if (successMsg()) {
+        <p class="mb-3 rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">{{ successMsg() }}</p>
+      }
+      @if (errorMsg()) {
+        <p class="mb-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{{ errorMsg() }}</p>
+      }
+
+      <div class="flex gap-3">
+        <button
+          (click)="pick()"
+          [disabled]="!selectedOrderId || !productId || actionLoading()"
+          class="flex-1 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+        >
+          Pick
+        </button>
+        <button
+          (click)="fail()"
+          [disabled]="!selectedOrderId || !productId || !failReason || actionLoading()"
+          class="flex-1 rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 disabled:opacity-50"
+        >
+          Fail
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

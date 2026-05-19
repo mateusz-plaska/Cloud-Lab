@@ -1,0 +1,66 @@
+<div class="p-8">
+  @if (loading()) {
+    <p class="text-slate-500">Ładowanie...</p>
+  } @else if (error()) {
+    <p class="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">{{ error() }}</p>
+  } @else if (report()) {
+    <div class="mb-6 flex items-start justify-between">
+      <div>
+        <h2 class="text-2xl font-bold text-slate-900">Zamówienie</h2>
+        <p class="mt-1 font-mono text-sm text-slate-500">{{ report()!.orderId }}</p>
+      </div>
+      <span
+        class="rounded-full px-3 py-1 text-sm font-semibold"
+        [class]="statusClass(report()!.status)"
+      >
+        {{ report()!.status }}
+      </span>
+    </div>
+
+    <div class="grid gap-6 lg:grid-cols-2">
+      <div class="rounded-xl bg-white p-6 shadow-sm">
+        <h3 class="mb-4 font-semibold text-slate-700">Produkty</h3>
+        @if (report()!.products.length === 0) {
+          <p class="text-sm text-slate-500">Brak produktów</p>
+        } @else {
+          <ul class="space-y-2">
+            @for (product of report()!.products; track product) {
+              <li class="rounded-lg bg-slate-50 px-3 py-2 font-mono text-sm text-slate-700">
+                {{ product }}
+              </li>
+            }
+          </ul>
+        }
+      </div>
+
+      <div class="rounded-xl bg-white p-6 shadow-sm">
+        <h3 class="mb-4 font-semibold text-slate-700">Szczegóły</h3>
+        @if (updates().length > 0) {
+          <div class="mb-4">
+            <p class="mb-2 text-xs font-semibold uppercase text-slate-400">Live updates</p>
+            <ul class="space-y-1">
+              @for (update of updates(); track update.timestamp) {
+                <li class="flex items-center gap-2 text-xs">
+                  <span
+                    class="rounded-full px-2 py-0.5 font-medium"
+                    [class]="statusClass(update.status)"
+                  >
+                    {{ update.status }}
+                  </span>
+                  <span class="text-slate-400">{{ formatDate(update.timestamp) }}</span>
+                </li>
+              }
+            </ul>
+          </div>
+        }
+
+        @for (entry of $any(report()!.details) | keyvalue; track entry.key) {
+          <div class="mb-2 flex justify-between text-sm">
+            <span class="text-slate-500">{{ entry.key }}</span>
+            <span class="font-medium text-slate-700">{{ entry.value }}</span>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>
