@@ -65,4 +65,66 @@
       <app-pagination [page]="page()" [totalPages]="totalPages()" (pageChange)="page.set($event)" />
     </div>
   }
+
+  <div class="mt-8 rounded-xl bg-white p-6 shadow-sm">
+    <h3 class="mb-4 text-lg font-semibold text-slate-900">Utwórz konto</h3>
+
+    @if (createMsg()) {
+      <p class="mb-4 rounded-lg bg-green-50 px-4 py-3 text-sm text-green-700">{{ createMsg() }}</p>
+    }
+    @if (createError()) {
+      <p class="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">{{ createError() }}</p>
+    }
+
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div>
+        <label class="mb-1 block text-xs font-medium text-slate-600">Nazwa użytkownika</label>
+        <input
+          type="text"
+          [(ngModel)]="newUsername"
+          placeholder="np. jan.kowalski"
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+        />
+      </div>
+      <div>
+        <label class="mb-1 block text-xs font-medium text-slate-600">Email</label>
+        <input
+          type="email"
+          [(ngModel)]="newEmail"
+          placeholder="np. jan@firma.pl"
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+        />
+      </div>
+      <div>
+        <label class="mb-1 block text-xs font-medium text-slate-600">Hasło</label>
+        <input
+          type="password"
+          [(ngModel)]="newPassword"
+          placeholder="Hasło"
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+        />
+      </div>
+      <div>
+        <label class="mb-1 block text-xs font-medium text-slate-600">Rola</label>
+        <select
+          [(ngModel)]="newRole"
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+        >
+          @for (role of roles; track role) {
+            <option [value]="role">{{ role }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <div class="mt-4 flex justify-end">
+      <button
+        (click)="createUser()"
+        [disabled]="createLoading()"
+        class="rounded-lg bg-indigo-600 px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 disabled:opacity-50"
+      >
+        {{ createLoading() ? 'Tworzenie...' : 'Utwórz konto' }}
+      </button>
+    </div>
+  </div>
 </div>

@@ -10,4 +10,8 @@ export class AdminService {
   getUsers() {
     return this.http.get<UserDto[]>(`${API_URL}/api/admin/users`);
   }
+
+  createUser(request: { username: string; email: string; password: string; role: string }) {
+    return this.http.post<UserDto>(`${API_URL}/api/admin/users`, request);
+  }
 }

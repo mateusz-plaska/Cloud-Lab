@@ -67,6 +67,16 @@ export class Admin implements OnInit {
     return list.slice((safe - 1) * PAGE_SIZE, safe * PAGE_SIZE);
   });
 
+  newUsername = '';
+  newEmail = '';
+  newPassword = '';
+  newRole: Role = 'OPERATOR';
+  readonly createLoading = signal(false);
+  readonly createMsg = signal('');
+  readonly createError = signal('');
+
+  readonly roles: Role[] = ['USER', 'OPERATOR', 'ADMIN'];
+
   ngOnInit(): void {
     this.adminService.getUsers().subscribe({
       next: (users) => {
@@ -78,6 +88,34 @@ export class Admin implements OnInit {
         this.loading.set(false);
       },
     });
+  }
+
+  async createUser(): Promise<void> {
+    if (this.createLoading()) return;
+    this.createMsg.set('');
+    this.createError.set('');
+    this.createLoading.set(true);
+    try {
+      await new Promise<UserDto>((res, rej) =>
+        this.adminService.createUser({
+          username: this.newUsername.trim(),
+          email: this.newEmail.trim(),
+          password: this.newPassword,
+          role: this.newRole,
+        }).subscribe({ next: res, error: rej }),
+      ).then((created) => {
+        this.users.update((list) => [created, ...list]);
+        this.createMsg.set(`Konto „${created.username}" (${created.role}) zostało utworzone`);
+        this.newUsername = '';
+        this.newEmail = '';
+        this.newPassword = '';
+        this.newRole = 'OPERATOR';
+      });
+    } catch {
+      this.createError.set('Nie udało się utworzyć konta');
+    } finally {
+      this.createLoading.set(false);
+    }
   }
 
   onSearch(value: string): void { this.search.set(value); this.page.set(1); }
