@@ -70,6 +70,7 @@ public class OrderRepositoryImpl implements OrderRepository {
 
     private OrderItem toDomain(OrderItemEntity entity) {
         return OrderItem.builder()
+                .id(entity.getId())
                 .productId(ProductId.of(entity.getProductId()))
                 .quantity(entity.getQuantity())
                 .build();
@@ -77,6 +78,7 @@ public class OrderRepositoryImpl implements OrderRepository {
 
     private OrderItemEntity toEntity(OrderItem item, OrderEntity orderEntity) {
         return OrderItemEntity.builder()
+                .id(item.id())
                 .productId(item.productId().value())
                 .quantity(item.quantity())
                 .order(orderEntity)

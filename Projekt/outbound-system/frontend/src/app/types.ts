@@ -1,6 +1,11 @@
 export type Role = 'USER' | 'OPERATOR' | 'ADMIN';
 
-export type OrderStatus = 'PENDING' | 'RESERVED' | 'PICKED' | 'PACKED' | 'SHIPPED' | 'FAILED';
+export interface Product {
+  productId: string;
+  name: string;
+}
+
+export type OrderStatus = 'PLANNED' | 'IN_PROGRESS' | 'PACKED' | 'READY' | 'COMPLETED' | 'FAILED';
 
 export type BoxSize = 'SMALL' | 'MEDIUM' | 'LARGE' | 'EXTRA_LARGE';
 
@@ -67,7 +72,8 @@ export interface FinishPackingRequest {
 
 export interface OrderStatusUpdate {
   orderId: string;
-  status: OrderStatus;
+  eventType: string;
+  station: string;
   timestamp: string;
 }
 

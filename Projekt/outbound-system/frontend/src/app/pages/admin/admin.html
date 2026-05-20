@@ -1,36 +1,57 @@
 <div class="p-8">
   <h2 class="mb-6 text-2xl font-bold text-slate-900">Zarządzanie użytkownikami</h2>
 
+  <div class="mb-4 flex flex-wrap items-center gap-3">
+    <input
+      type="text"
+      [ngModel]="search()"
+      (ngModelChange)="onSearch($event)"
+      placeholder="Szukaj po nazwie, emailu lub roli..."
+      class="rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+    />
+    <span class="text-sm text-slate-400">{{ filtered().length }} użytkowników</span>
+  </div>
+
   @if (loading()) {
     <p class="text-slate-500">Ładowanie...</p>
   } @else if (error()) {
     <p class="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">{{ error() }}</p>
+  } @else if (filtered().length === 0) {
+    <p class="text-slate-500">Brak wyników.</p>
   } @else {
     <div class="overflow-hidden rounded-xl bg-white shadow-sm">
       <table class="w-full text-sm">
         <thead class="border-b border-slate-200 bg-slate-50">
           <tr>
-            <th class="px-6 py-3 text-left font-semibold text-slate-600">Użytkownik</th>
-            <th class="px-6 py-3 text-left font-semibold text-slate-600">Email</th>
-            <th class="px-6 py-3 text-left font-semibold text-slate-600">Rola</th>
-            <th class="px-6 py-3 text-left font-semibold text-slate-600">Utworzono</th>
+            @for (col of [
+              { field: 'username', label: 'Użytkownik' },
+              { field: 'email', label: 'Email' },
+              { field: 'role', label: 'Rola' },
+              { field: 'createdAt', label: 'Utworzono' }
+            ]; track col.field) {
+              <th
+                class="cursor-pointer select-none px-6 py-3 text-left"
+                (click)="sort($any(col.field))"
+              >
+                <span class="flex items-center gap-1.5 font-semibold text-slate-600 hover:text-indigo-600">
+                  {{ col.label }}
+                  <ng-container [ngSwitch]="sortState($any(col.field))">
+                    <svg *ngSwitchCase="'asc'" class="h-3.5 w-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"/></svg>
+                    <svg *ngSwitchCase="'desc'" class="h-3.5 w-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                    <svg *ngSwitchDefault class="h-3.5 w-3.5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/></svg>
+                  </ng-container>
+                </span>
+              </th>
+            }
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-100">
-          @for (user of users(); track user.id) {
+          @for (user of paginated(); track user.id) {
             <tr class="hover:bg-slate-50">
               <td class="px-6 py-4 font-medium text-slate-900">{{ user.username }}</td>
               <td class="px-6 py-4 text-slate-600">{{ user.email }}</td>
               <td class="px-6 py-4">
-                <span
-                  class="rounded-full px-2 py-1 text-xs font-semibold"
-                  [class.bg-red-100]="user.role === 'ADMIN'"
-                  [class.text-red-800]="user.role === 'ADMIN'"
-                  [class.bg-indigo-100]="user.role === 'OPERATOR'"
-                  [class.text-indigo-800]="user.role === 'OPERATOR'"
-                  [class.bg-slate-100]="user.role === 'USER'"
-                  [class.text-slate-800]="user.role === 'USER'"
-                >
+                <span class="rounded-full px-2 py-1 text-xs font-semibold" [class]="roleClass($any(user.role))">
                   {{ user.role }}
                 </span>
               </td>
@@ -39,6 +60,7 @@
           }
         </tbody>
       </table>
+      <app-pagination [page]="page()" [totalPages]="totalPages()" (pageChange)="page.set($event)" />
     </div>
   }
 </div>

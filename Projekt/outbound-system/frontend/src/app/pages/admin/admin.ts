@@ -1,11 +1,25 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { NgSwitch, NgSwitchCase, NgSwitchDefault } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../core/services/admin.service';
-import type { UserDto } from '../../types';
+import type { Role, UserDto } from '../../types';
+import { PaginationComponent } from '../../shared/pagination';
+
+type SortField = 'username' | 'email' | 'role' | 'createdAt';
+type SortDir = 'asc' | 'desc';
+
+const PAGE_SIZE = 10;
+
+const ROLE_CLASSES: Record<Role, string> = {
+  ADMIN: 'bg-red-100 text-red-800',
+  OPERATOR: 'bg-indigo-100 text-indigo-800',
+  USER: 'bg-slate-100 text-slate-800',
+};
 
 @Component({
   selector: 'app-admin',
   standalone: true,
-  imports: [],
+  imports: [FormsModule, NgSwitch, NgSwitchCase, NgSwitchDefault, PaginationComponent],
   templateUrl: './admin.html',
 })
 export class Admin implements OnInit {
@@ -14,6 +28,44 @@ export class Admin implements OnInit {
   readonly users = signal<UserDto[]>([]);
   readonly loading = signal(true);
   readonly error = signal('');
+
+  readonly search = signal('');
+  readonly sortField = signal<SortField | null>(null);
+  readonly sortDir = signal<SortDir>('asc');
+  readonly page = signal(1);
+
+  readonly filtered = computed(() => {
+    const q = this.search().toLowerCase();
+    const field = this.sortField();
+    const dir = this.sortDir();
+
+    let list = this.users().filter((u) =>
+      !q ||
+      u.username.toLowerCase().includes(q) ||
+      u.email.toLowerCase().includes(q) ||
+      u.role.toLowerCase().includes(q),
+    );
+
+    if (field) {
+      list = [...list].sort((a, b) => {
+        const av = String(a[field]);
+        const bv = String(b[field]);
+        const cmp = av < bv ? -1 : av > bv ? 1 : 0;
+        return dir === 'asc' ? cmp : -cmp;
+      });
+    }
+
+    return list;
+  });
+
+  readonly totalPages = computed(() => Math.max(1, Math.ceil(this.filtered().length / PAGE_SIZE)));
+
+  readonly paginated = computed(() => {
+    const p = this.page();
+    const list = this.filtered();
+    const safe = Math.min(p, Math.max(1, Math.ceil(list.length / PAGE_SIZE)));
+    return list.slice((safe - 1) * PAGE_SIZE, safe * PAGE_SIZE);
+  });
 
   ngOnInit(): void {
     this.adminService.getUsers().subscribe({
@@ -26,6 +78,28 @@ export class Admin implements OnInit {
         this.loading.set(false);
       },
     });
+  }
+
+  onSearch(value: string): void { this.search.set(value); this.page.set(1); }
+
+  sort(field: SortField): void {
+    if (this.sortField() !== field) {
+      this.sortField.set(field);
+      this.sortDir.set('asc');
+    } else if (this.sortDir() === 'asc') {
+      this.sortDir.set('desc');
+    } else {
+      this.sortField.set(null);
+    }
+  }
+
+  sortState(field: SortField): 'none' | 'asc' | 'desc' {
+    if (this.sortField() !== field) return 'none';
+    return this.sortDir();
+  }
+
+  roleClass(role: Role): string {
+    return ROLE_CLASSES[role] ?? 'bg-slate-100 text-slate-800';
   }
 
   formatDate(iso: string): string {

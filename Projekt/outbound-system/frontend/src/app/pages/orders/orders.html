@@ -11,34 +11,70 @@
     }
   </div>
 
+  <div class="mb-4 flex flex-wrap items-center gap-3">
+    <input
+      type="text"
+      [ngModel]="search()"
+      (ngModelChange)="onSearch($event)"
+      placeholder="Szukaj po ID, kliencie..."
+      class="rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+    />
+    <select
+      [ngModel]="statusFilter()"
+      (ngModelChange)="onStatusFilter($event)"
+      class="rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+    >
+      <option value="">Wszystkie statusy</option>
+      @for (s of statuses.slice(1); track s) {
+        <option [value]="s">{{ s }}</option>
+      }
+    </select>
+    <span class="text-sm text-slate-400">{{ filtered().length }} wyników</span>
+  </div>
+
   @if (loading()) {
     <p class="text-slate-500">Ładowanie...</p>
   } @else if (error()) {
     <p class="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">{{ error() }}</p>
-  } @else if (orders().length === 0) {
-    <p class="text-slate-500">Brak zamówień.</p>
+  } @else if (filtered().length === 0) {
+    <p class="text-slate-500">Brak wyników.</p>
   } @else {
     <div class="overflow-hidden rounded-xl bg-white shadow-sm">
       <table class="w-full text-sm">
         <thead class="border-b border-slate-200 bg-slate-50">
           <tr>
-            <th class="px-6 py-3 text-left font-semibold text-slate-600">ID zamówienia</th>
-            <th class="px-6 py-3 text-left font-semibold text-slate-600">Klient</th>
-            <th class="px-6 py-3 text-left font-semibold text-slate-600">Status</th>
-            <th class="px-6 py-3 text-left font-semibold text-slate-600">Pozycje</th>
-            <th class="px-6 py-3 text-left font-semibold text-slate-600">Utworzono</th>
+            @for (col of columns; track col.field) {
+              <th
+                class="cursor-pointer select-none px-6 py-3 text-left"
+                (click)="sort($any(col.field))"
+              >
+                <span class="flex items-center gap-1.5 font-semibold text-slate-600 hover:text-indigo-600">
+                  {{ col.label }}
+                  <ng-container [ngSwitch]="sortState($any(col.field))">
+                    <svg *ngSwitchCase="'asc'" class="h-3.5 w-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"/></svg>
+                    <svg *ngSwitchCase="'desc'" class="h-3.5 w-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                    <svg *ngSwitchDefault class="h-3.5 w-3.5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/></svg>
+                  </ng-container>
+                </span>
+              </th>
+            }
             <th class="px-6 py-3"></th>
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-100">
-          @for (order of orders(); track order.orderId) {
+          @for (order of paginated(); track order.orderId) {
             <tr class="hover:bg-slate-50">
-              <td class="px-6 py-4 font-mono text-xs text-slate-600">
-                {{ order.orderId | slice: 0 : 8 }}...
-              </td>
-              <td class="px-6 py-4 font-mono text-xs text-slate-600">
-                {{ order.customerId | slice: 0 : 8 }}...
-              </td>
+              <td class="px-6 py-4 font-mono text-xs text-slate-600">{{ order.orderId }}</td>
+              @if (auth.isOperatorOrAdmin()) {
+                <td class="px-6 py-4">
+                  @if (customerName(order.customerId); as name) {
+                    <p class="text-sm font-medium text-slate-800">{{ name }}</p>
+                    <p class="font-mono text-xs text-slate-400">{{ order.customerId }}</p>
+                  } @else {
+                    <span class="font-mono text-xs text-slate-600">{{ order.customerId }}</span>
+                  }
+                </td>
+              }
               <td class="px-6 py-4">
                 <span class="rounded-full px-2 py-1 text-xs font-medium" [class]="statusClass(order.status)">
                   {{ order.status }}
@@ -47,10 +83,7 @@
               <td class="px-6 py-4 text-slate-600">{{ order.itemCount }}</td>
               <td class="px-6 py-4 text-slate-500">{{ formatDate(order.createdAt) }}</td>
               <td class="px-6 py-4 text-right">
-                <a
-                  [routerLink]="['/orders', order.orderId]"
-                  class="text-indigo-600 hover:text-indigo-800"
-                >
+                <a [routerLink]="['/orders', order.orderId]" class="text-indigo-600 hover:text-indigo-800">
                   Szczegóły →
                 </a>
               </td>
@@ -58,6 +91,7 @@
           }
         </tbody>
       </table>
+      <app-pagination [page]="page()" [totalPages]="totalPages()" (pageChange)="page.set($event)" />
     </div>
   }
 </div>

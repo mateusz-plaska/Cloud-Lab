@@ -1,15 +1,18 @@
-import { Component, OnInit, effect, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, effect, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { BaseChartDirective } from 'ng2-charts';
 import type { ChartData, ChartOptions } from 'chart.js';
+import { debounceTime, switchMap } from 'rxjs';
 import { DashboardService } from '../../core/services/dashboard.service';
+import { SseService } from '../../core/services/sse.service';
 import type { DashboardStats, OrderStatus } from '../../types';
 
 const STATUS_COLORS: Record<string, string> = {
-  PENDING: '#f59e0b',
-  RESERVED: '#3b82f6',
-  PICKED: '#8b5cf6',
+  PLANNED: '#f59e0b',
+  IN_PROGRESS: '#3b82f6',
   PACKED: '#f97316',
-  SHIPPED: '#22c55e',
+  READY: '#8b5cf6',
+  COMPLETED: '#22c55e',
   FAILED: '#ef4444',
 };
 
@@ -21,6 +24,8 @@ const STATUS_COLORS: Record<string, string> = {
 })
 export class Dashboard implements OnInit {
   private readonly dashboardService = inject(DashboardService);
+  private readonly sseService = inject(SseService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly stats = signal<DashboardStats | null>(null);
   readonly loading = signal(true);
@@ -29,8 +34,10 @@ export class Dashboard implements OnInit {
 
   readonly chartOptions: ChartOptions<'bar'> = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: { legend: { display: false } },
     scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
+    datasets: { bar: { maxBarThickness: 64 } },
   };
 
   constructor() {
@@ -54,15 +61,14 @@ export class Dashboard implements OnInit {
 
   ngOnInit(): void {
     this.dashboardService.getStats().subscribe({
-      next: (stats) => {
-        this.stats.set(stats);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.error.set('Nie udało się pobrać statystyk');
-        this.loading.set(false);
-      },
+      next: (stats) => { this.stats.set(stats); this.loading.set(false); },
+      error: () => { this.error.set('Nie udało się pobrać statystyk'); this.loading.set(false); },
     });
+
+    this.sseService
+      .watchDashboard()
+      .pipe(debounceTime(500), switchMap(() => this.dashboardService.getStats()), takeUntilDestroyed(this.destroyRef))
+      .subscribe({ next: (stats) => this.stats.set(stats) });
   }
 
   statusColor(status: string): string {

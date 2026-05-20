@@ -1,0 +1,29 @@
+@if (totalPages > 1) {
+  <div class="flex items-center justify-between border-t border-slate-200 px-4 py-3">
+    <span class="text-sm text-slate-500">Strona {{ page }} z {{ totalPages }}</span>
+    <div class="flex items-center gap-1">
+      <button
+        (click)="pageChange.emit(page - 1)"
+        [disabled]="page === 1"
+        class="flex h-8 w-8 items-center justify-center rounded text-lg text-slate-600 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
+      >‹</button>
+      @for (p of pageList(); track $index) {
+        @if (p === null) {
+          <span class="flex h-8 w-6 items-center justify-center text-sm text-slate-400">…</span>
+        } @else {
+          <button
+            (click)="pageChange.emit(p)"
+            [class]="p === page
+              ? 'flex h-8 w-8 items-center justify-center rounded bg-indigo-600 text-sm font-semibold text-white'
+              : 'flex h-8 w-8 items-center justify-center rounded text-sm text-slate-600 hover:bg-slate-100'"
+          >{{ p }}</button>
+        }
+      }
+      <button
+        (click)="pageChange.emit(page + 1)"
+        [disabled]="page === totalPages"
+        class="flex h-8 w-8 items-center justify-center rounded text-lg text-slate-600 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
+      >›</button>
+    </div>
+  </div>
+}

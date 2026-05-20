@@ -9,14 +9,21 @@ export class SseService {
   private readonly auth = inject(AuthService);
 
   watch(orderId: string): Observable<OrderStatusUpdate> {
+    return this.connect<OrderStatusUpdate>(`${API_URL}/api/sse/orders/${orderId}`, 'order-update');
+  }
+
+  watchDashboard(): Observable<OrderStatusUpdate> {
+    return this.connect<OrderStatusUpdate>(`${API_URL}/api/sse/dashboard`, 'dashboard-update');
+  }
+
+  private connect<T>(path: string, eventName: string): Observable<T> {
     return new Observable((observer) => {
       const token = this.auth.token();
-      const url = `${API_URL}/api/sse/orders/${orderId}?token=${token}`;
-      const source = new EventSource(url);
+      const source = new EventSource(`${path}?token=${token}`);
 
-      source.addEventListener('order-update', (event: MessageEvent) => {
+      source.addEventListener(eventName, (event: MessageEvent) => {
         try {
-          observer.next(JSON.parse(event.data) as OrderStatusUpdate);
+          observer.next(JSON.parse(event.data) as T);
         } catch {
           // ignore malformed events
         }

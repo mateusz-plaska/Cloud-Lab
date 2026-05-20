@@ -8,6 +8,7 @@ import org.pwr.cloud.lab.reservation.infrastructure.persistence.entity.StockEnti
 import org.pwr.cloud.lab.reservation.infrastructure.persistence.jpa.StockJpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -23,6 +24,11 @@ public class StockRepositoryImpl implements StockRepository {
     @Override
     public Optional<Stock> findByProductId(ProductId productId) {
         return stockJpaRepository.findById(productId.value()).map(this::toDomain);
+    }
+
+    @Override
+    public List<Stock> findAll() {
+        return stockJpaRepository.findAll().stream().map(this::toDomain).toList();
     }
 
     private StockEntity toEntity(Stock stock) {

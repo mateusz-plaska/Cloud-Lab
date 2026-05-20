@@ -7,12 +7,9 @@
     <div class="mb-6 flex items-start justify-between">
       <div>
         <h2 class="text-2xl font-bold text-slate-900">Zamówienie</h2>
-        <p class="mt-1 font-mono text-sm text-slate-500">{{ report()!.orderId }}</p>
+        <p class="mt-1 font-mono text-sm text-slate-400">{{ report()!.orderId }}</p>
       </div>
-      <span
-        class="rounded-full px-3 py-1 text-sm font-semibold"
-        [class]="statusClass(report()!.status)"
-      >
+      <span class="rounded-full px-3 py-1 text-sm font-semibold" [class]="statusClass(report()!.status)">
         {{ report()!.status }}
       </span>
     </div>
@@ -20,13 +17,19 @@
     <div class="grid gap-6 lg:grid-cols-2">
       <div class="rounded-xl bg-white p-6 shadow-sm">
         <h3 class="mb-4 font-semibold text-slate-700">Produkty</h3>
-        @if (report()!.products.length === 0) {
+        @if (parsedProducts().length === 0) {
           <p class="text-sm text-slate-500">Brak produktów</p>
         } @else {
           <ul class="space-y-2">
-            @for (product of report()!.products; track product) {
-              <li class="rounded-lg bg-slate-50 px-3 py-2 font-mono text-sm text-slate-700">
-                {{ product }}
+            @for (p of parsedProducts(); track p.productId) {
+              <li class="flex items-center justify-between rounded-lg bg-slate-50 px-4 py-3">
+                <div>
+                  <p class="text-sm font-medium text-slate-800">{{ p.name }}</p>
+                  <p class="mt-0.5 font-mono text-xs text-slate-400">{{ p.productId }}</p>
+                </div>
+                <span class="ml-4 shrink-0 rounded-full bg-slate-200 px-2.5 py-0.5 text-xs font-semibold text-slate-700">
+                  × {{ p.quantity }}
+                </span>
               </li>
             }
           </ul>
@@ -34,31 +37,41 @@
       </div>
 
       <div class="rounded-xl bg-white p-6 shadow-sm">
-        <h3 class="mb-4 font-semibold text-slate-700">Szczegóły</h3>
-        @if (updates().length > 0) {
-          <div class="mb-4">
-            <p class="mb-2 text-xs font-semibold uppercase text-slate-400">Live updates</p>
-            <ul class="space-y-1">
-              @for (update of updates(); track update.timestamp) {
-                <li class="flex items-center gap-2 text-xs">
-                  <span
-                    class="rounded-full px-2 py-0.5 font-medium"
-                    [class]="statusClass(update.status)"
-                  >
-                    {{ update.status }}
-                  </span>
-                  <span class="text-slate-400">{{ formatDate(update.timestamp) }}</span>
-                </li>
-              }
-            </ul>
-          </div>
-        }
+        <h3 class="mb-4 font-semibold text-slate-700">Historia statusów</h3>
 
-        @for (entry of $any(report()!.details) | keyvalue; track entry.key) {
-          <div class="mb-2 flex justify-between text-sm">
-            <span class="text-slate-500">{{ entry.key }}</span>
-            <span class="font-medium text-slate-700">{{ entry.value }}</span>
-          </div>
+        @if (updates().length === 0) {
+          <p class="text-sm text-slate-400">Brak aktualizacji w tej sesji. Aktualizacje pojawiają się tu na żywo.</p>
+        } @else {
+          <ol class="space-y-3">
+            @for (u of updates(); track u.timestamp) {
+              <li class="flex items-start gap-3">
+                <span
+                  class="mt-0.5 h-2 w-2 shrink-0 rounded-full"
+                  [class.bg-green-500]="!isErrorEvent(u.eventType)"
+                  [class.bg-red-500]="isErrorEvent(u.eventType)"
+                ></span>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <p
+                      class="text-sm font-medium"
+                      [class.text-slate-800]="!isErrorEvent(u.eventType)"
+                      [class.text-red-700]="isErrorEvent(u.eventType)"
+                    >
+                      {{ eventLabel(u.eventType) }}
+                    </p>
+                    @if (statusForEvent(u.eventType); as s) {
+                      <span class="rounded-full px-2 py-0.5 text-xs font-semibold" [class]="statusClass(s)">
+                        {{ s }}
+                      </span>
+                    }
+                  </div>
+                  <p class="mt-0.5 text-xs text-slate-400">
+                    {{ stationLabel(u.station) }} · {{ formatDate(u.timestamp) }}
+                  </p>
+                </div>
+              </li>
+            }
+          </ol>
         }
       </div>
     </div>

@@ -8,6 +8,6 @@ export class PackingService {
   private readonly http = inject(HttpClient);
 
   finishPacking(orderId: string, request: FinishPackingRequest) {
-    return this.http.post<string>(`${API_URL}/api/packing/${orderId}`, request);
+    return this.http.post(`${API_URL}/api/packing/${orderId}`, request, { responseType: 'text' });
   }
 }

@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.pwr.cloud.lab.bff.infrastructure.proxy.ReservationServiceProxy;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +18,11 @@ import org.springframework.web.bind.annotation.*;
 public class StockController {
 
     private final ReservationServiceProxy reservationServiceProxy;
+
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> getStocks() {
+        return ResponseEntity.ok(reservationServiceProxy.getStocks());
+    }
 
     @PostMapping
     public ResponseEntity<Void> addStock(

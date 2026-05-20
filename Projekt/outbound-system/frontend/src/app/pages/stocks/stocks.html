@@ -1,43 +1,151 @@
 <div class="p-8">
   <h2 class="mb-6 text-2xl font-bold text-slate-900">Stan magazynowy</h2>
 
-  <div class="max-w-md rounded-xl bg-white p-6 shadow-sm">
-    <h3 class="mb-4 font-semibold text-slate-700">Dodaj stan magazynowy</h3>
+  @if (dataLoading()) {
+    <p class="text-slate-500">Ładowanie...</p>
+  } @else if (dataError()) {
+    <p class="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">{{ dataError() }}</p>
+  } @else {
+    @if (rows().length === 0) {
+      <p class="mb-6 text-slate-500">Brak produktów w katalogu.</p>
+    } @else {
+      <div class="mb-4">
+        <input
+          type="text"
+          [ngModel]="search()"
+          (ngModelChange)="onSearch($event)"
+          placeholder="Szukaj produktu..."
+          class="rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+        />
+        <span class="ml-3 text-sm text-slate-400">{{ filteredRows().length }} produktów</span>
+      </div>
 
-    <div class="mb-4">
-      <label class="mb-1 block text-sm font-medium text-slate-700">ID produktu</label>
-      <input
-        type="text"
-        [(ngModel)]="productId"
-        placeholder="uuid produktu"
-        class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
-      />
-    </div>
-
-    <div class="mb-6">
-      <label class="mb-1 block text-sm font-medium text-slate-700">Ilość</label>
-      <input
-        type="number"
-        [(ngModel)]="quantity"
-        min="1"
-        max="1000"
-        class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
-      />
-    </div>
-
-    @if (successMsg()) {
-      <p class="mb-4 rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">{{ successMsg() }}</p>
+      <div class="mb-8 overflow-hidden rounded-xl bg-white shadow-sm">
+        <table class="w-full text-sm">
+          <thead class="border-b border-slate-200 bg-slate-50">
+            <tr>
+              <th class="cursor-pointer select-none px-6 py-3 text-left" (click)="sort('name')">
+                <span class="flex items-center gap-1.5 font-semibold text-slate-600 hover:text-indigo-600">
+                  Produkt
+                  @if (sortState('name') === 'asc') {
+                    <svg class="h-3.5 w-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"/></svg>
+                  } @else if (sortState('name') === 'desc') {
+                    <svg class="h-3.5 w-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                  } @else {
+                    <svg class="h-3.5 w-3.5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/></svg>
+                  }
+                </span>
+              </th>
+              <th class="cursor-pointer select-none px-6 py-3 text-right" (click)="sort('quantity')">
+                <span class="flex items-center justify-end gap-1.5 font-semibold text-slate-600 hover:text-indigo-600">
+                  Ilość
+                  @if (sortState('quantity') === 'asc') {
+                    <svg class="h-3.5 w-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"/></svg>
+                  } @else if (sortState('quantity') === 'desc') {
+                    <svg class="h-3.5 w-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                  } @else {
+                    <svg class="h-3.5 w-3.5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/></svg>
+                  }
+                </span>
+              </th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            @if (filteredRows().length === 0) {
+              <tr><td colspan="2" class="px-6 py-8 text-center text-sm text-slate-400">Brak wyników</td></tr>
+            } @else {
+              @for (row of pagedRows(); track row.productId) {
+                <tr class="hover:bg-slate-50">
+                  <td class="px-6 py-4">
+                    <span class="font-medium text-slate-900">{{ row.name }}</span>
+                    <span class="ml-2 font-mono text-xs text-slate-400">{{ row.productId }}</span>
+                  </td>
+                  <td class="px-6 py-4 text-right font-medium" [class.text-red-600]="row.quantity === 0" [class.text-slate-900]="row.quantity > 0">
+                    {{ row.quantity }}
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+        <app-pagination [page]="page()" [totalPages]="totalPages()" (pageChange)="page.set($event)" />
+      </div>
     }
-    @if (errorMsg()) {
-      <p class="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{{ errorMsg() }}</p>
-    }
 
-    <button
-      (click)="submit()"
-      [disabled]="!productId || quantity < 1 || loading()"
-      class="w-full rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
-    >
-      {{ loading() ? 'Zapisywanie...' : 'Dodaj stan' }}
-    </button>
-  </div>
+    <div class="grid gap-6 lg:grid-cols-2">
+      <div class="rounded-xl bg-white p-6 shadow-sm">
+        <h3 class="mb-4 font-semibold text-slate-700">Uzupełnij stan</h3>
+
+        <div class="mb-4">
+          <label class="mb-1 block text-sm font-medium text-slate-700">Produkt</label>
+          <select
+            [(ngModel)]="selectedProductId"
+            class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+          >
+            <option value="">-- Wybierz produkt --</option>
+            @for (p of products(); track p.productId) {
+              <option [value]="p.productId">{{ p.name }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="mb-6">
+          <label class="mb-1 block text-sm font-medium text-slate-700">Ilość</label>
+          <input
+            type="number"
+            [(ngModel)]="addQty"
+            min="1"
+            max="1000"
+            class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+          />
+        </div>
+
+        @if (addMsg()) {
+          <p class="mb-3 rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">{{ addMsg() }}</p>
+        }
+        @if (addError()) {
+          <p class="mb-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{{ addError() }}</p>
+        }
+
+        <button
+          (click)="addStock()"
+          [disabled]="!selectedProductId || addQty < 1 || addLoading()"
+          class="w-full rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+        >
+          {{ addLoading() ? 'Zapisywanie...' : 'Dodaj stan' }}
+        </button>
+      </div>
+
+      @if (auth.hasRole('ADMIN')) {
+        <div class="rounded-xl bg-white p-6 shadow-sm">
+          <h3 class="mb-4 font-semibold text-slate-700">Dodaj produkt do katalogu</h3>
+
+          <div class="mb-6">
+            <label class="mb-1 block text-sm font-medium text-slate-700">Nazwa produktu</label>
+            <input
+              type="text"
+              [(ngModel)]="newProductName"
+              placeholder="np. awokado"
+              class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+            />
+          </div>
+
+          @if (createMsg()) {
+            <p class="mb-3 rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">{{ createMsg() }}</p>
+          }
+          @if (createError()) {
+            <p class="mb-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{{ createError() }}</p>
+          }
+
+          <button
+            (click)="createProduct()"
+            [disabled]="!newProductName.trim() || createLoading()"
+            class="w-full rounded-lg bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-900 disabled:opacity-50"
+          >
+            {{ createLoading() ? 'Dodawanie...' : 'Dodaj produkt' }}
+          </button>
+        </div>
+      }
+    </div>
+  }
 </div>

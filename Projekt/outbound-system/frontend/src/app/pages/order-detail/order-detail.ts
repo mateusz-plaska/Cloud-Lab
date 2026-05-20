@@ -1,29 +1,66 @@
-import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { KeyValuePipe } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { OrderService } from '../../core/services/order.service';
+import { ProductService } from '../../core/services/product.service';
 import { SseService } from '../../core/services/sse.service';
-import type { OrderReport, OrderStatus, OrderStatusUpdate } from '../../types';
+import type { OrderReport, OrderStatus, OrderStatusUpdate, Product } from '../../types';
 
 const STATUS_CLASSES: Record<OrderStatus, string> = {
-  PENDING: 'bg-yellow-100 text-yellow-800',
-  RESERVED: 'bg-blue-100 text-blue-800',
-  PICKED: 'bg-purple-100 text-purple-800',
+  PLANNED: 'bg-yellow-100 text-yellow-800',
+  IN_PROGRESS: 'bg-blue-100 text-blue-800',
   PACKED: 'bg-orange-100 text-orange-800',
-  SHIPPED: 'bg-green-100 text-green-800',
+  READY: 'bg-purple-100 text-purple-800',
+  COMPLETED: 'bg-green-100 text-green-800',
   FAILED: 'bg-red-100 text-red-800',
 };
+
+const EVENT_TO_STATUS: Partial<Record<string, OrderStatus>> = {
+  OutboundOrderCreatedEvent: 'PLANNED',
+  StockReservedEvent: 'IN_PROGRESS',
+  AllocationFailedEvent: 'FAILED',
+  OrderPickedEvent: 'COMPLETED',
+  OrderPickFailedEvent: 'FAILED',
+  PackingFinishedEvent: 'PACKED',
+  ShipmentCreatedEvent: 'READY',
+};
+
+const EVENT_LABEL: Record<string, string> = {
+  OutboundOrderCreatedEvent: 'Zamówienie przyjęte',
+  StockReservedEvent: 'Towar zarezerwowany',
+  AllocationFailedEvent: 'Błąd rezerwacji towaru',
+  OrderPickedEvent: 'Kompletacja zakończona',
+  OrderPickFailedEvent: 'Błąd kompletacji',
+  PackingFinishedEvent: 'Zamówienie zapakowane',
+  ShipmentCreatedEvent: 'Przesyłka nadana',
+};
+
+const STATION_LABEL: Record<string, string> = {
+  'order-gateway': 'System zamówień',
+  reservation: 'Magazyn',
+  picking: 'Picking',
+  packing: 'Packing',
+  shipping: 'Wysyłka',
+};
+
+const ERROR_EVENTS = new Set(['AllocationFailedEvent', 'OrderPickFailedEvent']);
+
+export interface ParsedProduct {
+  productId: string;
+  name: string;
+  quantity: number;
+}
 
 @Component({
   selector: 'app-order-detail',
   standalone: true,
-  imports: [KeyValuePipe],
+  imports: [],
   templateUrl: './order-detail.html',
 })
 export class OrderDetail implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly orderService = inject(OrderService);
+  private readonly productService = inject(ProductService);
   private readonly sseService = inject(SseService);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -32,8 +69,27 @@ export class OrderDetail implements OnInit {
   readonly error = signal('');
   readonly updates = signal<OrderStatusUpdate[]>([]);
 
+  private readonly products = signal<Product[]>([]);
+  private readonly productMap = computed(() => new Map(this.products().map((p) => [p.productId, p.name])));
+
+  readonly parsedProducts = computed((): ParsedProduct[] => {
+    const report = this.report();
+    const map = this.productMap();
+    if (!report) return [];
+    return report.products
+      .map((s) => {
+        const m = s.match(/^(.+) \(x(\d+)\)$/);
+        if (!m) return null;
+        const productId = m[1];
+        return { productId, name: map.get(productId) ?? productId.slice(0, 8) + '…', quantity: parseInt(m[2], 10) };
+      })
+      .filter((p): p is ParsedProduct => p !== null);
+  });
+
   ngOnInit(): void {
     const orderId = this.route.snapshot.paramMap.get('id')!;
+
+    this.productService.getProducts().subscribe({ next: (p) => this.products.set(p) });
 
     this.orderService.getOrderReport(orderId).subscribe({
       next: (report) => {
@@ -51,14 +107,33 @@ export class OrderDetail implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (update) => {
-          this.updates.update((prev) => [update, ...prev].slice(0, 20));
-          this.report.update((r) => (r ? { ...r, status: update.status } : r));
+          this.updates.update((prev) => [update, ...prev].slice(0, 50));
+          const newStatus = EVENT_TO_STATUS[update.eventType];
+          if (newStatus) {
+            this.report.update((r) => (r ? { ...r, status: newStatus } : r));
+          }
         },
       });
   }
 
   statusClass(status: OrderStatus): string {
     return STATUS_CLASSES[status] ?? 'bg-slate-100 text-slate-800';
+  }
+
+  eventLabel(eventType: string): string {
+    return EVENT_LABEL[eventType] ?? eventType;
+  }
+
+  stationLabel(station: string): string {
+    return STATION_LABEL[station] ?? station;
+  }
+
+  isErrorEvent(eventType: string): boolean {
+    return ERROR_EVENTS.has(eventType);
+  }
+
+  statusForEvent(eventType: string): OrderStatus | null {
+    return EVENT_TO_STATUS[eventType] ?? null;
   }
 
   formatDate(iso: string): string {

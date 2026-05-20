@@ -17,4 +17,9 @@ public class SseController {
     public SseEmitter streamOrderStatus(@PathVariable String orderId) {
         return sseEmitterRegistry.subscribe(orderId);
     }
+
+    @GetMapping(value = "/dashboard", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter streamDashboard() {
+        return sseEmitterRegistry.subscribeDashboard();
+    }
 }

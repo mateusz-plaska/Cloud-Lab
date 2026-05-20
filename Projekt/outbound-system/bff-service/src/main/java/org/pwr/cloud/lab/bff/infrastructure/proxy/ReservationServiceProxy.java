@@ -13,6 +13,10 @@ public class ReservationServiceProxy {
         this.restClient = restClient;
     }
 
+    public String getStocks() {
+        return restClient.get().uri("/api/stocks").retrieve().body(String.class);
+    }
+
     public void addStock(String productId, int quantity) {
         restClient
                 .post()
@@ -22,5 +26,17 @@ public class ReservationServiceProxy {
                         .build())
                 .retrieve()
                 .toBodilessEntity();
+    }
+
+    public String getProducts() {
+        return restClient.get().uri("/api/products").retrieve().body(String.class);
+    }
+
+    public String createProduct(String name) {
+        return restClient
+                .post()
+                .uri(u -> u.path("/api/products").queryParam("name", name).build())
+                .retrieve()
+                .body(String.class);
     }
 }

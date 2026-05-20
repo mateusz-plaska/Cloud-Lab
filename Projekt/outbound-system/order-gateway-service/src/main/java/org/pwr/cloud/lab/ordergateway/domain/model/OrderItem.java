@@ -4,4 +4,4 @@ import lombok.Builder;
 import org.pwr.cloud.lab.common.domain.model.id.ProductId;
 
 @Builder
-public record OrderItem(ProductId productId, int quantity) {}
+public record OrderItem(Long id, ProductId productId, int quantity) {}

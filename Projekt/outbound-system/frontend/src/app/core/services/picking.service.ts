@@ -8,11 +8,11 @@ export class PickingService {
 
   pickItem(orderId: string, productId: string, quantity: number) {
     const params = new HttpParams().set('productId', productId).set('quantity', quantity);
-    return this.http.post<string>(`${API_URL}/api/picking/${orderId}/pick`, null, { params });
+    return this.http.post(`${API_URL}/api/picking/${orderId}/pick`, null, { params, responseType: 'text' });
   }
 
   failItem(orderId: string, productId: string, reason: string) {
     const params = new HttpParams().set('productId', productId).set('reason', reason);
-    return this.http.post<string>(`${API_URL}/api/picking/${orderId}/fail`, null, { params });
+    return this.http.post(`${API_URL}/api/picking/${orderId}/fail`, null, { params, responseType: 'text' });
   }
 }

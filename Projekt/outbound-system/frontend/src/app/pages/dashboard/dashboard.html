@@ -6,18 +6,15 @@
   } @else if (error()) {
     <p class="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">{{ error() }}</p>
   } @else if (stats()) {
-    <div class="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div class="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
       <div class="rounded-xl bg-white p-6 shadow-sm">
-        <p class="text-sm font-medium text-slate-500">Wszystkie zamówienia</p>
+        <p class="text-sm font-medium text-slate-500">Wszystkie</p>
         <p class="mt-2 text-3xl font-bold text-slate-900">{{ stats()!.totalOrders }}</p>
       </div>
-
       @for (entry of statusEntries(); track entry[0]) {
         <div class="rounded-xl bg-white p-6 shadow-sm">
           <p class="text-sm font-medium text-slate-500">{{ entry[0] }}</p>
-          <p class="mt-2 text-3xl font-bold" [style.color]="statusColor(entry[0])">
-            {{ entry[1] }}
-          </p>
+          <p class="mt-2 text-3xl font-bold" [style.color]="statusColor(entry[0])">{{ entry[1] }}</p>
         </div>
       }
     </div>
@@ -25,7 +22,7 @@
     @if (stats()!.totalOrders > 0) {
       <div class="rounded-xl bg-white p-6 shadow-sm">
         <h3 class="mb-4 text-sm font-semibold text-slate-700">Zamówienia wg statusu</h3>
-        <div class="h-64">
+        <div class="h-56">
           <canvas baseChart [data]="chartData()" [type]="'bar'" [options]="chartOptions"></canvas>
         </div>
       </div>
