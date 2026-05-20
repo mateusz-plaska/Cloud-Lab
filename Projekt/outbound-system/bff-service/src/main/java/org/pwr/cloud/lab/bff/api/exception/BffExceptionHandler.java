@@ -1,6 +1,9 @@
 package org.pwr.cloud.lab.bff.api.exception;
 
 import lombok.extern.slf4j.Slf4j;
+import org.pwr.cloud.lab.common.domain.exception.DomainConflictException;
+import org.pwr.cloud.lab.common.domain.exception.DomainNotFoundException;
+import org.pwr.cloud.lab.common.domain.exception.DomainRuntimeException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -12,6 +15,7 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 
 import java.time.Instant;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @RestControllerAdvice
@@ -26,9 +30,14 @@ public class BffExceptionHandler {
         return error(HttpStatus.UNAUTHORIZED, "Invalid username or password");
     }
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Map<String, Object>> handleIllegalArgument(IllegalArgumentException e) {
-        return error(HttpStatus.BAD_REQUEST, e.getMessage());
+    @ExceptionHandler(DomainNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleNotFound(DomainNotFoundException e) {
+        return domainError(HttpStatus.NOT_FOUND, e);
+    }
+
+    @ExceptionHandler(DomainConflictException.class)
+    public ResponseEntity<Map<String, Object>> handleConflict(DomainConflictException e) {
+        return domainError(HttpStatus.CONFLICT, e);
     }
 
     @ExceptionHandler(HttpClientErrorException.class)
@@ -47,6 +56,18 @@ public class BffExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleServiceUnavailable(ResourceAccessException e) {
         log.error("Downstream service unavailable: {}", e.getMessage());
         return error(HttpStatus.SERVICE_UNAVAILABLE, "Downstream service temporarily unavailable");
+    }
+
+    private ResponseEntity<Map<String, Object>> domainError(HttpStatus status, DomainRuntimeException e) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", Instant.now().toString());
+        body.put("message", e.getMessage());
+        body.put("httpStatus", status.value());
+        body.put("code", e.getCode());
+        if (e.getArgs() != null && !e.getArgs().isEmpty()) {
+            body.put("args", e.getArgs());
+        }
+        return ResponseEntity.status(status).body(body);
     }
 
     private ResponseEntity<Map<String, Object>> error(HttpStatus status, String message) {

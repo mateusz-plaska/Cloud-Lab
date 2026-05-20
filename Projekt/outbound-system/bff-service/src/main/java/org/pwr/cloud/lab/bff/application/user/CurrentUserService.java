@@ -1,11 +1,11 @@
 package org.pwr.cloud.lab.bff.application.user;
 
 import lombok.RequiredArgsConstructor;
+import org.pwr.cloud.lab.bff.domain.exception.UserNotFoundException;
 import org.pwr.cloud.lab.bff.domain.model.Role;
 import org.pwr.cloud.lab.bff.domain.model.User;
 import org.pwr.cloud.lab.bff.domain.repository.UserRepository;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -18,7 +18,7 @@ public class CurrentUserService {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return userRepository
                 .findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("Current user not found: " + username));
+                .orElseThrow(() -> new UserNotFoundException(username));
     }
 
     public boolean hasRole(Role role) {
