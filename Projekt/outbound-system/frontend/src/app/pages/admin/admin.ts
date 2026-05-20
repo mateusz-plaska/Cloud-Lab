@@ -30,8 +30,8 @@ export class Admin implements OnInit {
   readonly error = signal('');
 
   readonly search = signal('');
-  readonly sortField = signal<SortField | null>(null);
-  readonly sortDir = signal<SortDir>('asc');
+  readonly sortField = signal<SortField | null>('createdAt');
+  readonly sortDir = signal<SortDir>('desc');
   readonly page = signal(1);
 
   readonly filtered = computed(() => {

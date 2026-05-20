@@ -65,8 +65,8 @@ export class Orders implements OnInit {
 
   readonly search = signal('');
   readonly statusFilter = signal<OrderStatus | string>('');
-  readonly sortField = signal<SortField | null>(null);
-  readonly sortDir = signal<SortDir>('asc');
+  readonly sortField = signal<SortField | null>('createdAt');
+  readonly sortDir = signal<SortDir>('desc');
 
   readonly statuses = ALL_STATUSES;
 
