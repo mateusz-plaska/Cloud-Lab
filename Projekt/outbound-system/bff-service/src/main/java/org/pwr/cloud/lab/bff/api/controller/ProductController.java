@@ -1,7 +1,9 @@
 package org.pwr.cloud.lab.bff.api.controller;
 
 import jakarta.annotation.security.RolesAllowed;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.pwr.cloud.lab.bff.api.dto.product.CreateProductRequest;
 import org.pwr.cloud.lab.bff.domain.model.Roles;
 import org.pwr.cloud.lab.bff.infrastructure.proxy.ReservationServiceProxy;
 import org.springframework.http.HttpStatus;
@@ -21,8 +23,8 @@ public class ProductController {
     }
 
     @RolesAllowed({Roles.OPERATOR, Roles.ADMIN})
-    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> createProduct(@RequestParam String name) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(reservationServiceProxy.createProduct(name));
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> createProduct(@RequestBody @Valid CreateProductRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(reservationServiceProxy.createProduct(request.name()));
     }
 }

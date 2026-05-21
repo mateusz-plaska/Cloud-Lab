@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { API_URL } from '../api';
 
 export interface StockItem {
@@ -16,7 +16,6 @@ export class StockService {
   }
 
   addStock(productId: string, quantity: number) {
-    const params = new HttpParams().set('productId', productId).set('quantity', quantity);
-    return this.http.post<void>(`${API_URL}/api/stocks`, null, { params });
+    return this.http.post<void>(`${API_URL}/api/stocks`, { productId, quantity });
   }
 }

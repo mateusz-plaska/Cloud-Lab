@@ -31,8 +31,8 @@ export class Stocks implements OnInit {
   readonly dataError = signal('');
 
   readonly search = signal('');
-  readonly sortField = signal<'name' | 'quantity' | null>(null);
-  readonly sortDir = signal<'asc' | 'desc'>('asc');
+  readonly sortField = signal<'name' | 'quantity' | null>('quantity');
+  readonly sortDir = signal<'asc' | 'desc'>('desc');
 
   readonly rows = computed((): StockRow[] => {
     const stockMap = new Map(this.stocks().map((s) => [s.productId, s.quantity]));

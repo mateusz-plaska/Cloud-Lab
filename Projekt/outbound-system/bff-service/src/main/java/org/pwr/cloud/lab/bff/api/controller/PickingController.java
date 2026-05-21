@@ -4,6 +4,7 @@ import jakarta.annotation.security.RolesAllowed;
 import lombok.RequiredArgsConstructor;
 import org.pwr.cloud.lab.bff.domain.model.Roles;
 import org.pwr.cloud.lab.bff.infrastructure.proxy.PickingServiceProxy;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,7 +16,7 @@ public class PickingController {
     private final PickingServiceProxy pickingServiceProxy;
 
     @RolesAllowed({Roles.OPERATOR, Roles.ADMIN})
-    @PostMapping("/{orderId}/pick")
+    @PostMapping(value = "/{orderId}/pick", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> pickItem(
             @PathVariable String orderId,
             @RequestParam String productId,
@@ -24,7 +25,7 @@ public class PickingController {
     }
 
     @RolesAllowed({Roles.OPERATOR, Roles.ADMIN})
-    @PostMapping("/{orderId}/fail")
+    @PostMapping(value = "/{orderId}/fail", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> failItem(
             @PathVariable String orderId,
             @RequestParam String productId,
