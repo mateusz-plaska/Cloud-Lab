@@ -67,7 +67,10 @@ export class Dashboard implements OnInit {
 
     this.sseService
       .watchDashboard()
-      .pipe(debounceTime(500), switchMap(() => this.dashboardService.getStats()), takeUntilDestroyed(this.destroyRef))
+      .pipe(
+        debounceTime(500),
+        switchMap(() => this.dashboardService.getStats()), takeUntilDestroyed(this.destroyRef)
+      )
       .subscribe({ next: (stats) => this.stats.set(stats) });
   }
 

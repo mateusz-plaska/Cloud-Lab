@@ -29,7 +29,12 @@ export class SseService {
         }
       });
 
-      source.onerror = () => observer.error('SSE connection error');
+      source.onerror = () => {
+        if (source.readyState === EventSource.CLOSED) {
+          observer.error('SSE connection closed');
+        }
+        // readyState === CONNECTING: EventSource is auto-reconnecting, stay alive
+      };
 
       return () => source.close();
     });

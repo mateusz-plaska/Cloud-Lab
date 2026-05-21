@@ -3,6 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NgSwitch, NgSwitchCase, NgSwitchDefault } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { Subject, debounceTime, switchMap } from 'rxjs';
 import { AdminService } from '../../core/services/admin.service';
 import { AuthService } from '../../core/services/auth.service';
 import { OrderService } from '../../core/services/order.service';
@@ -19,14 +20,6 @@ export const STATUS_CLASSES: Record<OrderStatus, string> = {
   FAILED: 'bg-red-100 text-red-800',
 };
 
-const EVENT_TO_STATUS: Partial<Record<SseEventType, OrderStatus>> = {
-  STOCK_RESERVED: 'IN_PROGRESS',
-  ALLOCATION_FAILED: 'FAILED',
-  ORDER_PICKED: 'COMPLETED',
-  PICK_FAILED: 'FAILED',
-  PACKING_FINISHED: 'PACKED',
-  SHIPMENT_CREATED: 'READY',
-};
 
 export const ALL_STATUSES: (OrderStatus | '')[] = [
   '',
@@ -59,6 +52,17 @@ export class Orders implements OnInit {
   readonly orders = signal<OrderListItem[]>([]);
   readonly loading = signal(true);
   readonly error = signal('');
+
+  private readonly refreshOrders$ = new Subject<void>();
+
+  private static readonly EVENT_TO_STATUS: Partial<Record<SseEventType, OrderStatus>> = {
+    STOCK_RESERVED: 'IN_PROGRESS',
+    ALLOCATION_FAILED: 'FAILED',
+    ORDER_PICKED: 'COMPLETED',
+    PICK_FAILED: 'FAILED',
+    PACKING_FINISHED: 'PACKED',
+    SHIPMENT_CREATED: 'READY',
+  };
 
   private readonly users = signal<UserDto[]>([]);
   private readonly userMap = computed(() => new Map(this.users().map((u) => [u.id, u.username])));
@@ -135,16 +139,25 @@ export class Orders implements OnInit {
       this.adminService.getUsers().subscribe({ next: (u) => this.users.set(u) });
     }
 
+    this.refreshOrders$.pipe(
+      debounceTime(300),
+      switchMap(() => this.orderService.getOrders()),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe({ next: (orders) => this.orders.set(orders) });
+
     this.sseService
       .watchDashboard()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (update) => {
-          const newStatus = EVENT_TO_STATUS[update.eventType];
-          if (!newStatus) return;
-          this.orders.update((list) =>
-            list.map((o) => (o.orderId === update.orderId ? { ...o, status: newStatus } : o)),
-          );
+          const newStatus = Orders.EVENT_TO_STATUS[update.eventType];
+          if (newStatus && this.orders().some((o) => o.orderId === update.orderId)) {
+            this.orders.update((list) =>
+              list.map((o) => (o.orderId === update.orderId ? { ...o, status: newStatus } : o)),
+            );
+          } else {
+            this.refreshOrders$.next();
+          }
         },
       });
   }
