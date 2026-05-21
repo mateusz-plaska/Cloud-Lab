@@ -1,6 +1,8 @@
 package org.pwr.cloud.lab.bff.api.controller;
 
+import jakarta.annotation.security.RolesAllowed;
 import lombok.RequiredArgsConstructor;
+import org.pwr.cloud.lab.bff.domain.model.Roles;
 import org.pwr.cloud.lab.bff.infrastructure.proxy.PickingServiceProxy;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +14,7 @@ public class PickingController {
 
     private final PickingServiceProxy pickingServiceProxy;
 
+    @RolesAllowed({Roles.OPERATOR, Roles.ADMIN})
     @PostMapping("/{orderId}/pick")
     public ResponseEntity<String> pickItem(
             @PathVariable String orderId,
@@ -20,6 +23,7 @@ public class PickingController {
         return ResponseEntity.ok(pickingServiceProxy.pickItem(orderId, productId, quantity));
     }
 
+    @RolesAllowed({Roles.OPERATOR, Roles.ADMIN})
     @PostMapping("/{orderId}/fail")
     public ResponseEntity<String> failItem(
             @PathVariable String orderId,

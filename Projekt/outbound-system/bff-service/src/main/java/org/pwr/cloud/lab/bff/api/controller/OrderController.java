@@ -1,9 +1,11 @@
 package org.pwr.cloud.lab.bff.api.controller;
 
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.pwr.cloud.lab.bff.api.dto.order.CreateOrderRequest;
 import org.pwr.cloud.lab.bff.application.user.CurrentUserService;
+import org.pwr.cloud.lab.bff.domain.model.Roles;
 import org.pwr.cloud.lab.bff.infrastructure.proxy.OrderServiceProxy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -26,6 +28,7 @@ public class OrderController {
         return ResponseEntity.ok(orderServiceProxy.getOrders(customerId));
     }
 
+    @RolesAllowed(Roles.USER)
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> createOrder(@RequestBody @Valid CreateOrderRequest request) {
         String result = orderServiceProxy.createOrder(request);

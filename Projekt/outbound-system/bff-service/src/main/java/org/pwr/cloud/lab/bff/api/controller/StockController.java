@@ -1,9 +1,11 @@
 package org.pwr.cloud.lab.bff.api.controller;
 
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
+import org.pwr.cloud.lab.bff.domain.model.Roles;
 import org.pwr.cloud.lab.bff.infrastructure.proxy.ReservationServiceProxy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -24,6 +26,7 @@ public class StockController {
         return ResponseEntity.ok(reservationServiceProxy.getStocks());
     }
 
+    @RolesAllowed({Roles.OPERATOR, Roles.ADMIN})
     @PostMapping
     public ResponseEntity<Void> addStock(
             @RequestParam @NotBlank String productId,
