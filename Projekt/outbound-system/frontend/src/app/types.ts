@@ -70,9 +70,18 @@ export interface FinishPackingRequest {
   weight: number;
 }
 
+export type SseEventType =
+  | 'ORDER_CREATED'
+  | 'STOCK_RESERVED'
+  | 'ALLOCATION_FAILED'
+  | 'ORDER_PICKED'
+  | 'PICK_FAILED'
+  | 'PACKING_FINISHED'
+  | 'SHIPMENT_CREATED';
+
 export interface OrderStatusUpdate {
   orderId: string;
-  eventType: string;
+  eventType: SseEventType;
   station: string;
   timestamp: string;
 }

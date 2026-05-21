@@ -38,7 +38,7 @@ public class SseEmitterRegistry {
 
         for (String json : dashboardHistory) {
             try {
-                emitter.send(SseEmitter.event().name("dashboard-update").data(json));
+                emitter.send(SseEmitter.event().name(SseEventNames.DASHBOARD_UPDATE).data(json));
             } catch (IOException e) {
                 break;
             }
@@ -50,7 +50,8 @@ public class SseEmitterRegistry {
 
     public SseEmitter subscribe(String orderId) {
         var emitter = new SseEmitter(Long.MAX_VALUE);
-        emitters.computeIfAbsent(orderId, k -> new CopyOnWriteArrayList<>()).add(emitter);
+        var orderEmitterList = emitters.computeIfAbsent(orderId, k -> new CopyOnWriteArrayList<>());
+        orderEmitterList.add(emitter);
 
         emitter.onCompletion(() -> remove(orderId, emitter));
         emitter.onTimeout(() -> remove(orderId, emitter));
@@ -59,20 +60,19 @@ public class SseEmitterRegistry {
         var past = history.getOrDefault(orderId, new ConcurrentLinkedDeque<>());
         for (OrderStatusUpdate update : past) {
             try {
-                emitter.send(SseEmitter.event().name("order-update").data(jsonMapper.writeValueAsString(update)));
+                emitter.send(SseEmitter.event().name(SseEventNames.ORDER_UPDATE).data(jsonMapper.writeValueAsString(update)));
             } catch (IOException e) {
                 break;
             }
         }
 
         log.info("New SSE subscriber for order [{}], replayed {} events, total subscribers: {}",
-                orderId, past.size(), emitters.get(orderId).size());
+                orderId, past.size(), orderEmitterList.size());
         return emitter;
     }
 
     public void broadcast(String orderId, OrderStatusUpdate update) {
-        history.computeIfAbsent(orderId, k -> new ConcurrentLinkedDeque<>());
-        Deque<OrderStatusUpdate> orderHistory = history.get(orderId);
+        Deque<OrderStatusUpdate> orderHistory = history.computeIfAbsent(orderId, k -> new ConcurrentLinkedDeque<>());
         orderHistory.addLast(update);
         while (orderHistory.size() > MAX_HISTORY) {
             orderHistory.pollFirst();
@@ -91,7 +91,7 @@ public class SseEmitterRegistry {
 
         for (SseEmitter emitter : orderEmitters) {
             try {
-                emitter.send(SseEmitter.event().name("order-update").data(json));
+                emitter.send(SseEmitter.event().name(SseEventNames.ORDER_UPDATE).data(json));
             } catch (IOException e) {
                 dead.add(emitter);
             }
@@ -110,7 +110,7 @@ public class SseEmitterRegistry {
         List<SseEmitter> dead = new ArrayList<>();
         for (SseEmitter emitter : dashboardEmitters) {
             try {
-                emitter.send(SseEmitter.event().name("dashboard-update").data(json));
+                emitter.send(SseEmitter.event().name(SseEventNames.DASHBOARD_UPDATE).data(json));
             } catch (IOException e) {
                 dead.add(emitter);
             }

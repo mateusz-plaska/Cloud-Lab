@@ -7,7 +7,7 @@ import { AdminService } from '../../core/services/admin.service';
 import { AuthService } from '../../core/services/auth.service';
 import { OrderService } from '../../core/services/order.service';
 import { SseService } from '../../core/services/sse.service';
-import type { OrderListItem, OrderStatus, UserDto } from '../../types';
+import type { OrderListItem, OrderStatus, SseEventType, UserDto } from '../../types';
 import { PaginationComponent } from '../../shared/pagination';
 
 export const STATUS_CLASSES: Record<OrderStatus, string> = {
@@ -19,13 +19,13 @@ export const STATUS_CLASSES: Record<OrderStatus, string> = {
   FAILED: 'bg-red-100 text-red-800',
 };
 
-const EVENT_TO_STATUS: Partial<Record<string, OrderStatus>> = {
-  StockReservedEvent: 'IN_PROGRESS',
-  AllocationFailedEvent: 'FAILED',
-  OrderPickedEvent: 'COMPLETED',
-  OrderPickFailedEvent: 'FAILED',
-  PackingFinishedEvent: 'PACKED',
-  ShipmentCreatedEvent: 'READY',
+const EVENT_TO_STATUS: Partial<Record<SseEventType, OrderStatus>> = {
+  STOCK_RESERVED: 'IN_PROGRESS',
+  ALLOCATION_FAILED: 'FAILED',
+  ORDER_PICKED: 'COMPLETED',
+  PICK_FAILED: 'FAILED',
+  PACKING_FINISHED: 'PACKED',
+  SHIPMENT_CREATED: 'READY',
 };
 
 export const ALL_STATUSES: (OrderStatus | '')[] = [

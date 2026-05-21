@@ -3,6 +3,8 @@ package org.pwr.cloud.lab.bff.infrastructure.messaging;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.pwr.cloud.lab.bff.api.dto.sse.OrderStatusUpdate;
+import org.pwr.cloud.lab.bff.api.dto.sse.SseEventType;
+import org.pwr.cloud.lab.bff.api.dto.sse.Station;
 import org.pwr.cloud.lab.bff.infrastructure.sse.SseEmitterRegistry;
 import org.pwr.cloud.lab.common.domain.event.*;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
@@ -21,37 +23,37 @@ public class BffEventListener {
 
     @RabbitHandler
     public void handleOrderCreated(OutboundOrderCreatedEvent event) {
-        broadcast(event.orderId().value(), "OutboundOrderCreatedEvent", "order-gateway");
+        broadcast(event.orderId().value(), SseEventType.ORDER_CREATED, Station.ORDER_GATEWAY);
     }
 
     @RabbitHandler
     public void handleStockReserved(StockReservedEvent event) {
-        broadcast(event.orderId().value(), "StockReservedEvent", "reservation");
+        broadcast(event.orderId().value(), SseEventType.STOCK_RESERVED, Station.RESERVATION);
     }
 
     @RabbitHandler
     public void handleAllocationFailed(AllocationFailedEvent event) {
-        broadcast(event.orderId().value(), "AllocationFailedEvent", "reservation");
+        broadcast(event.orderId().value(), SseEventType.ALLOCATION_FAILED, Station.RESERVATION);
     }
 
     @RabbitHandler
     public void handleOrderPicked(OrderPickedEvent event) {
-        broadcast(event.orderId().value(), "OrderPickedEvent", "picking");
+        broadcast(event.orderId().value(), SseEventType.ORDER_PICKED, Station.PICKING);
     }
 
     @RabbitHandler
     public void handlePickingFailed(OrderPickFailedEvent event) {
-        broadcast(event.orderId().value(), "OrderPickFailedEvent", "picking");
+        broadcast(event.orderId().value(), SseEventType.PICK_FAILED, Station.PICKING);
     }
 
     @RabbitHandler
     public void handlePackingFinished(PackingFinishedEvent event) {
-        broadcast(event.orderId().value(), "PackingFinishedEvent", "packing");
+        broadcast(event.orderId().value(), SseEventType.PACKING_FINISHED, Station.PACKING);
     }
 
     @RabbitHandler
     public void handleShipmentCreated(ShipmentCreatedEvent event) {
-        broadcast(event.orderId().value(), "ShipmentCreatedEvent", "shipping");
+        broadcast(event.orderId().value(), SseEventType.SHIPMENT_CREATED, Station.SHIPPING);
     }
 
     @RabbitHandler(isDefault = true)
@@ -59,7 +61,7 @@ public class BffEventListener {
         log.debug("BFF received unhandled message type: {}", message.getClass().getSimpleName());
     }
 
-    private void broadcast(String orderId, String eventType, String station) {
+    private void broadcast(String orderId, SseEventType eventType, String station) {
         log.info("SSE broadcast [{}] for order [{}] at station [{}]", eventType, orderId, station);
         sseEmitterRegistry.broadcast(orderId, new OrderStatusUpdate(orderId, eventType, station, Instant.now()));
     }

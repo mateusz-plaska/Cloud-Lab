@@ -4,7 +4,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { OrderService } from '../../core/services/order.service';
 import { ProductService } from '../../core/services/product.service';
 import { SseService } from '../../core/services/sse.service';
-import type { OrderReport, OrderStatus, OrderStatusUpdate, Product } from '../../types';
+import type { OrderReport, OrderStatus, OrderStatusUpdate, Product, SseEventType } from '../../types';
 
 const STATUS_CLASSES: Record<OrderStatus, string> = {
   PLANNED: 'bg-yellow-100 text-yellow-800',
@@ -15,24 +15,24 @@ const STATUS_CLASSES: Record<OrderStatus, string> = {
   FAILED: 'bg-red-100 text-red-800',
 };
 
-const EVENT_TO_STATUS: Partial<Record<string, OrderStatus>> = {
-  OutboundOrderCreatedEvent: 'PLANNED',
-  StockReservedEvent: 'IN_PROGRESS',
-  AllocationFailedEvent: 'FAILED',
-  OrderPickedEvent: 'COMPLETED',
-  OrderPickFailedEvent: 'FAILED',
-  PackingFinishedEvent: 'PACKED',
-  ShipmentCreatedEvent: 'READY',
+const EVENT_TO_STATUS: Partial<Record<SseEventType, OrderStatus>> = {
+  ORDER_CREATED: 'PLANNED',
+  STOCK_RESERVED: 'IN_PROGRESS',
+  ALLOCATION_FAILED: 'FAILED',
+  ORDER_PICKED: 'COMPLETED',
+  PICK_FAILED: 'FAILED',
+  PACKING_FINISHED: 'PACKED',
+  SHIPMENT_CREATED: 'READY',
 };
 
-const EVENT_LABEL: Record<string, string> = {
-  OutboundOrderCreatedEvent: 'Zamówienie przyjęte',
-  StockReservedEvent: 'Towar zarezerwowany',
-  AllocationFailedEvent: 'Błąd rezerwacji towaru',
-  OrderPickedEvent: 'Kompletacja zakończona',
-  OrderPickFailedEvent: 'Błąd kompletacji',
-  PackingFinishedEvent: 'Zamówienie zapakowane',
-  ShipmentCreatedEvent: 'Przesyłka nadana',
+const EVENT_LABEL: Record<SseEventType, string> = {
+  ORDER_CREATED: 'Zamówienie przyjęte',
+  STOCK_RESERVED: 'Towar zarezerwowany',
+  ALLOCATION_FAILED: 'Błąd rezerwacji towaru',
+  ORDER_PICKED: 'Kompletacja zakończona',
+  PICK_FAILED: 'Błąd kompletacji',
+  PACKING_FINISHED: 'Zamówienie zapakowane',
+  SHIPMENT_CREATED: 'Przesyłka nadana',
 };
 
 const STATION_LABEL: Record<string, string> = {
@@ -43,7 +43,7 @@ const STATION_LABEL: Record<string, string> = {
   shipping: 'Wysyłka',
 };
 
-const ERROR_EVENTS = new Set(['AllocationFailedEvent', 'OrderPickFailedEvent']);
+const ERROR_EVENTS = new Set<SseEventType>(['ALLOCATION_FAILED', 'PICK_FAILED']);
 
 export interface ParsedProduct {
   productId: string;
@@ -120,19 +120,19 @@ export class OrderDetail implements OnInit {
     return STATUS_CLASSES[status] ?? 'bg-slate-100 text-slate-800';
   }
 
-  eventLabel(eventType: string): string {
-    return EVENT_LABEL[eventType] ?? eventType;
+  eventLabel(eventType: SseEventType): string {
+    return EVENT_LABEL[eventType];
   }
 
   stationLabel(station: string): string {
     return STATION_LABEL[station] ?? station;
   }
 
-  isErrorEvent(eventType: string): boolean {
+  isErrorEvent(eventType: SseEventType): boolean {
     return ERROR_EVENTS.has(eventType);
   }
 
-  statusForEvent(eventType: string): OrderStatus | null {
+  statusForEvent(eventType: SseEventType): OrderStatus | null {
     return EVENT_TO_STATUS[eventType] ?? null;
   }
 
