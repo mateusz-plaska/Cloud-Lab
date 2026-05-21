@@ -50,4 +50,10 @@ public class AuthService {
         var saved = userRepository.save(user);
         return new AuthResponse(jwtService.generateToken(saved), saved.id().value(), saved.username(), saved.role().name());
     }
+
+    public AuthResponse refresh(String username) {
+        var user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException(username));
+        return new AuthResponse(jwtService.generateToken(user), user.id().value(), user.username(), user.role().name());
+    }
 }
