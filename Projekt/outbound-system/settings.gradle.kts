@@ -2,14 +2,15 @@ rootProject.name = "outbound-system"
 
 include("common")
 
-val services = listOf(
-    "order-gateway-service",
-    "packing-service",
-    "picking-service",
-    "reservation-service",
-    "shipping-service",
-    "bff-service",
-)
+val services =
+    listOf(
+        "order-gateway-service",
+        "packing-service",
+        "picking-service",
+        "reservation-service",
+        "shipping-service",
+        "bff-service",
+    )
 
 for (service in services) {
     val serviceDir = File(rootDir, service)

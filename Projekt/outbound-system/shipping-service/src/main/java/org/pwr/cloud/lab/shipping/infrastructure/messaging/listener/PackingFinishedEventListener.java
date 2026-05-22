@@ -32,7 +32,7 @@ public class PackingFinishedEventListener {
 
         log.info("Scheduling shipment for order [{}] at {} (delay {}s)", event.orderId(), dispatchAt, delaySeconds);
 
-        pendingDispatchRepository.save(new PendingDispatch(
-                event.orderId(), event.weight(), event.boxType(), dispatchAt));
+        pendingDispatchRepository.save(
+                new PendingDispatch(event.orderId(), event.weight(), event.boxType(), dispatchAt));
     }
 }

@@ -1,11 +1,11 @@
 package org.pwr.cloud.lab.bff.api.controller;
 
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.pwr.cloud.lab.bff.api.dto.auth.RegisterRequest;
 import org.pwr.cloud.lab.bff.api.dto.user.UserDto;
 import org.pwr.cloud.lab.bff.application.auth.AuthService;
-import jakarta.annotation.security.RolesAllowed;
 import org.pwr.cloud.lab.bff.domain.exception.UserNotFoundException;
 import org.pwr.cloud.lab.bff.domain.model.Roles;
 import org.pwr.cloud.lab.bff.domain.repository.UserRepository;
@@ -26,7 +26,8 @@ public class AdminController {
     @RolesAllowed({Roles.OPERATOR, Roles.ADMIN})
     @GetMapping("/users")
     public ResponseEntity<List<UserDto>> getUsers() {
-        List<UserDto> users = userRepository.findAll().stream().map(UserDto::from).toList();
+        List<UserDto> users =
+                userRepository.findAll().stream().map(UserDto::from).toList();
         return ResponseEntity.ok(users);
     }
 
@@ -34,7 +35,8 @@ public class AdminController {
     @PostMapping("/users")
     public ResponseEntity<UserDto> createUser(@RequestBody @Valid RegisterRequest request) {
         authService.register(request);
-        var user = userRepository.findByUsername(request.username())
+        var user = userRepository
+                .findByUsername(request.username())
                 .orElseThrow(() -> new UserNotFoundException(request.username()));
         return ResponseEntity.status(HttpStatus.CREATED).body(UserDto.from(user));
     }

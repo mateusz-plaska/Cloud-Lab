@@ -7,4 +7,9 @@ import org.pwr.cloud.lab.ordergateway.domain.model.OrderStatus;
 import java.time.Instant;
 
 public record OrderListItemDto(
-        OrderId orderId, CustomerId customerId, OrderStatus status, int itemCount, Instant createdAt, Instant updatedAt) {}
+        OrderId orderId,
+        CustomerId customerId,
+        OrderStatus status,
+        int itemCount,
+        Instant createdAt,
+        Instant updatedAt) {}

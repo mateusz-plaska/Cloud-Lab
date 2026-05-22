@@ -3,7 +3,6 @@ package org.pwr.cloud.lab.bff.domain.exception;
 import org.pwr.cloud.lab.common.domain.exception.DomainConflictException;
 import org.pwr.cloud.lab.common.domain.exception.DomainRuntimeExceptionBuilder;
 import org.pwr.cloud.lab.common.domain.exception.ErrorCodes;
-import org.pwr.cloud.lab.common.domain.model.id.OrderId;
 
 public class EmailAlreadyInUseException extends DomainConflictException {
     public EmailAlreadyInUseException(String email) {

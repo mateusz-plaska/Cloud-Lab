@@ -7,6 +7,8 @@ import java.util.List;
 
 public interface PendingDispatchRepository {
     void save(PendingDispatch dispatch);
+
     List<PendingDispatch> findAllDue();
+
     void delete(OrderId orderId);
 }

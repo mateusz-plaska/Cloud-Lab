@@ -7,10 +7,12 @@ import org.pwr.cloud.lab.bff.api.dto.sse.SseEventType;
 import java.time.Instant;
 
 @Entity
-@Table(name = "order_status_updates", indexes = {
-        @Index(name = "idx_osu_order_id", columnList = "order_id"),
-        @Index(name = "idx_osu_timestamp", columnList = "timestamp")
-})
+@Table(
+        name = "order_status_updates",
+        indexes = {
+            @Index(name = "idx_osu_order_id", columnList = "order_id"),
+            @Index(name = "idx_osu_timestamp", columnList = "timestamp")
+        })
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor

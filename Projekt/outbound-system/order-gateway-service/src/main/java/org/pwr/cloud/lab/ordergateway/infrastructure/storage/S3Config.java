@@ -44,7 +44,9 @@ public class S3Config {
 
         if (isLocal) {
             builder.endpointOverride(URI.create(s3Endpoint))
-                   .serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(true).build());
+                    .serviceConfiguration(S3Configuration.builder()
+                            .pathStyleAccessEnabled(true)
+                            .build());
         }
 
         return builder.build();

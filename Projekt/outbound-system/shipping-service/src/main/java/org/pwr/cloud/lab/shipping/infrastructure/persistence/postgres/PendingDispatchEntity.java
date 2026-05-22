@@ -7,9 +7,9 @@ import org.pwr.cloud.lab.common.domain.model.BoxSize;
 import java.time.Instant;
 
 @Entity
-@Table(name = "pending_dispatches", indexes = {
-        @Index(name = "idx_pending_dispatches_dispatch_at", columnList = "dispatch_at")
-})
+@Table(
+        name = "pending_dispatches",
+        indexes = {@Index(name = "idx_pending_dispatches_dispatch_at", columnList = "dispatch_at")})
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor

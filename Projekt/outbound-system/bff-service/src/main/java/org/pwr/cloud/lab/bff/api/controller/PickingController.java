@@ -27,9 +27,7 @@ public class PickingController {
     @RolesAllowed({Roles.OPERATOR, Roles.ADMIN})
     @PostMapping(value = "/{orderId}/fail", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> failItem(
-            @PathVariable String orderId,
-            @RequestParam String productId,
-            @RequestParam String reason) {
+            @PathVariable String orderId, @RequestParam String productId, @RequestParam String reason) {
         return ResponseEntity.ok(pickingServiceProxy.failItem(orderId, productId, reason));
     }
 }

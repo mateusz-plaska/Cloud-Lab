@@ -5,4 +5,5 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import org.pwr.cloud.lab.common.domain.model.BoxSize;
 
-public record FinishPackingRequest(@NotBlank BoxSize boxSize, @NotNull @Positive Double weight) {}
+public record FinishPackingRequest(
+        @NotBlank BoxSize boxSize, @NotNull @Positive Double weight) {}

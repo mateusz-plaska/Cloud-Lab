@@ -6,5 +6,6 @@ import java.util.List;
 
 public interface OrderStatusUpdateRepository {
     void save(OrderStatusUpdate update);
+
     List<OrderStatusUpdate> findAllByOrderIdOrderedByTimestampAsc(String orderId);
 }

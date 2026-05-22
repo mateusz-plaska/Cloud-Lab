@@ -55,8 +55,11 @@ public class SseEmitterRegistry {
             }
         }
 
-        log.info("New SSE subscriber for order [{}], replayed {} events, total subscribers: {}",
-                orderId, pastUpdates.size(), orderEmitterList.size());
+        log.info(
+                "New SSE subscriber for order [{}], replayed {} events, total subscribers: {}",
+                orderId,
+                pastUpdates.size(),
+                orderEmitterList.size());
         return emitter;
     }
 
@@ -81,7 +84,8 @@ public class SseEmitterRegistry {
         List<SseEmitter> dead = new ArrayList<>();
         for (var emitter : dashboardEmitters) {
             try {
-                emitter.send(SseEmitter.event().name(SseEventNames.DASHBOARD_UPDATE).data(toJson(update)));
+                emitter.send(
+                        SseEmitter.event().name(SseEventNames.DASHBOARD_UPDATE).data(toJson(update)));
             } catch (IOException e) {
                 dead.add(emitter);
             }

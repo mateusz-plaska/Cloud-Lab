@@ -18,6 +18,9 @@ public interface PackingClient {
     String PACKING_SERVICE = "packing-service";
 
     @CircuitBreaker(name = PACKING_SERVICE)
-    @PostMapping(value = "/api/packing/{orderId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(
+            value = "/api/packing/{orderId}",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     String finishPacking(@PathVariable String orderId, @RequestBody FinishPackingRequest request);
 }

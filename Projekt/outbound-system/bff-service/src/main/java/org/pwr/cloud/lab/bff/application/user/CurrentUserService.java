@@ -16,9 +16,7 @@ public class CurrentUserService {
 
     public User getCurrentUser() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        return userRepository
-                .findByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException(username));
+        return userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException(username));
     }
 
     public boolean hasRole(Role role) {

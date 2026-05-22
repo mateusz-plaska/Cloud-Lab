@@ -22,8 +22,7 @@ public class OrderStatusUpdateRepositoryImpl implements OrderStatusUpdateReposit
 
     @Override
     public List<OrderStatusUpdate> findAllByOrderIdOrderedByTimestampAsc(String orderId) {
-        return orderStatusUpdateJpaRepository.findAllByOrderIdOrderByTimestampAsc(orderId)
-                .stream()
+        return orderStatusUpdateJpaRepository.findAllByOrderIdOrderByTimestampAsc(orderId).stream()
                 .map(this::toDomain)
                 .toList();
     }
@@ -39,9 +38,6 @@ public class OrderStatusUpdateRepositoryImpl implements OrderStatusUpdateReposit
 
     private OrderStatusUpdate toDomain(OrderStatusUpdateEntity entity) {
         return new OrderStatusUpdate(
-                entity.getOrderId(),
-                entity.getEventType(),
-                entity.getStation(),
-                entity.getTimestamp());
+                entity.getOrderId(), entity.getEventType(), entity.getStation(), entity.getTimestamp());
     }
 }

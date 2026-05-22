@@ -25,10 +25,7 @@ import java.util.Map;
 @Slf4j
 public class BffExceptionHandler {
 
-    @ExceptionHandler(value = {
-            BadCredentialsException.class,
-            UsernameNotFoundException.class
-    })
+    @ExceptionHandler(value = {BadCredentialsException.class, UsernameNotFoundException.class})
     public ResponseEntity<Map<String, Object>> handleBadCredentials(Exception e) {
         return error(HttpStatus.UNAUTHORIZED, "Invalid username or password");
     }

@@ -3,6 +3,7 @@ package org.pwr.cloud.lab.ordergateway.api.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.pwr.cloud.lab.common.application.cqs.Mediator;
+import org.pwr.cloud.lab.common.domain.model.id.CustomerId;
 import org.pwr.cloud.lab.common.domain.model.id.OrderId;
 import org.pwr.cloud.lab.ordergateway.api.dto.CreateOrderRequestDto;
 import org.pwr.cloud.lab.ordergateway.api.dto.OrderListItemDto;
@@ -10,7 +11,6 @@ import org.pwr.cloud.lab.ordergateway.api.dto.OrderReportDto;
 import org.pwr.cloud.lab.ordergateway.application.command.CreateOrderCommand;
 import org.pwr.cloud.lab.ordergateway.application.query.GetOrderFileQuery;
 import org.pwr.cloud.lab.ordergateway.application.query.GetOrderQuery;
-import org.pwr.cloud.lab.common.domain.model.id.CustomerId;
 import org.pwr.cloud.lab.ordergateway.application.query.GetOrdersQuery;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -28,8 +28,7 @@ public class OrderController {
     private final Mediator mediator;
 
     @GetMapping
-    public ResponseEntity<List<OrderListItemDto>> getOrders(
-            @RequestParam(required = false) CustomerId customerId) {
+    public ResponseEntity<List<OrderListItemDto>> getOrders(@RequestParam(required = false) CustomerId customerId) {
         var orders = mediator.ask(GetOrdersQuery.forCustomer(customerId));
         return ResponseEntity.ok(orders);
     }

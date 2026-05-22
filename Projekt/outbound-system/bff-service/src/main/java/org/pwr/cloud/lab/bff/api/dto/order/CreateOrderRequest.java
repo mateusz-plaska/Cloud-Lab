@@ -7,4 +7,5 @@ import org.pwr.cloud.lab.common.domain.model.id.UserId;
 
 import java.util.List;
 
-public record CreateOrderRequest(@NotBlank UserId userId, @NotEmpty List<@Valid OrderItemRequest> items) {}
+public record CreateOrderRequest(
+        @NotBlank UserId userId, @NotEmpty List<@Valid OrderItemRequest> items) {}

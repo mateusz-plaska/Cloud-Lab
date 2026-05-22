@@ -38,7 +38,9 @@ public class OrderRepositoryImpl implements OrderRepository {
 
     @Override
     public List<Order> findByCustomerId(CustomerId customerId) {
-        return orderJpaRepository.findByCustomerId(customerId.value()).stream().map(this::toDomain).toList();
+        return orderJpaRepository.findByCustomerId(customerId.value()).stream()
+                .map(this::toDomain)
+                .toList();
     }
 
     private Order toDomain(OrderEntity entity) {

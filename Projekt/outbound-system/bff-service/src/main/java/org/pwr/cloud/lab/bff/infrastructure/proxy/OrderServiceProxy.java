@@ -39,13 +39,12 @@ public class OrderServiceProxy {
             var data = new OrderGatewayClient.DataPart(
                     request.userId().toCustomerId().value(),
                     request.items().stream()
-                            .map(item -> new OrderGatewayClient.DataPart.Item(item.productId().value(), item.quantity()))
+                            .map(item -> new OrderGatewayClient.DataPart.Item(
+                                    item.productId().value(), item.quantity()))
                             .toList());
 
             var file = new FormData(
-                    MediaType.TEXT_PLAIN_VALUE,
-                    "order-metadata.txt",
-                    "source=web".getBytes(StandardCharsets.UTF_8));
+                    MediaType.TEXT_PLAIN_VALUE, "order-metadata.txt", "source=web".getBytes(StandardCharsets.UTF_8));
 
             return orderGatewayClient.createOrder(data, file);
         } catch (Exception e) {

@@ -5,13 +5,8 @@ import org.pwr.cloud.lab.common.application.cqs.CommandHandler;
 import org.pwr.cloud.lab.common.domain.model.id.ProductId;
 import org.pwr.cloud.lab.reservation.api.dto.ProductDto;
 import org.pwr.cloud.lab.reservation.application.command.AddProductCommand;
-import org.pwr.cloud.lab.reservation.application.command.AddStockCommand;
 import org.pwr.cloud.lab.reservation.domain.model.Product;
-import org.pwr.cloud.lab.reservation.domain.model.Stock;
 import org.pwr.cloud.lab.reservation.domain.repository.ProductRepository;
-import org.pwr.cloud.lab.reservation.domain.repository.StockRepository;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

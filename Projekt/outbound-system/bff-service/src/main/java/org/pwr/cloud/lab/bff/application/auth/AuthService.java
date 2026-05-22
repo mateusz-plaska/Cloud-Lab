@@ -31,7 +31,11 @@ public class AuthService {
         var user = userRepository
                 .findByUsername(request.username())
                 .orElseThrow(() -> new UserNotFoundException(request.username()));
-        return new AuthResponse(jwtService.generateToken(user), user.id().value(), user.username(), user.role().name());
+        return new AuthResponse(
+                jwtService.generateToken(user),
+                user.id().value(),
+                user.username(),
+                user.role().name());
     }
 
     public AuthResponse register(RegisterRequest request) {
@@ -48,12 +52,19 @@ public class AuthService {
                 .role(request.role() != null ? request.role() : Role.USER)
                 .build();
         var saved = userRepository.save(user);
-        return new AuthResponse(jwtService.generateToken(saved), saved.id().value(), saved.username(), saved.role().name());
+        return new AuthResponse(
+                jwtService.generateToken(saved),
+                saved.id().value(),
+                saved.username(),
+                saved.role().name());
     }
 
     public AuthResponse refresh(String username) {
-        var user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException(username));
-        return new AuthResponse(jwtService.generateToken(user), user.id().value(), user.username(), user.role().name());
+        var user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException(username));
+        return new AuthResponse(
+                jwtService.generateToken(user),
+                user.id().value(),
+                user.username(),
+                user.role().name());
     }
 }

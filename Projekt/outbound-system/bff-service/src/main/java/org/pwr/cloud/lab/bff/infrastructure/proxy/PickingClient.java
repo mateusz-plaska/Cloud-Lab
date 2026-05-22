@@ -18,7 +18,10 @@ public interface PickingClient {
 
     @CircuitBreaker(name = PICKING_SERVICE)
     @PostMapping(value = "/api/picking/{orderId}/pick", produces = MediaType.APPLICATION_JSON_VALUE)
-    String pickItem(@PathVariable String orderId, @RequestParam String productId, @RequestParam(defaultValue = "1") int quantity);
+    String pickItem(
+            @PathVariable String orderId,
+            @RequestParam String productId,
+            @RequestParam(defaultValue = "1") int quantity);
 
     @CircuitBreaker(name = PICKING_SERVICE)
     @PostMapping(value = "/api/picking/{orderId}/fail", produces = MediaType.APPLICATION_JSON_VALUE)
