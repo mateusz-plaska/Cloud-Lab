@@ -1,8 +1,8 @@
-import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, effect, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NgSwitch, NgSwitchCase, NgSwitchDefault } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subject, debounceTime, switchMap } from 'rxjs';
 import { AdminService } from '../../core/services/admin.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -48,6 +48,8 @@ export class Orders implements OnInit {
   private readonly adminService = inject(AdminService);
   private readonly sseService = inject(SseService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
   readonly orders = signal<OrderListItem[]>([]);
   readonly loading = signal(true);
@@ -83,6 +85,23 @@ export class Orders implements OnInit {
   ];
 
   readonly page = signal(1);
+
+  constructor() {
+    effect(() => {
+      const params: Record<string, string> = {};
+      const search = this.search();
+      const status = this.statusFilter();
+      const sort = this.sortField();
+      const dir = this.sortDir();
+      const page = this.page();
+      if (search) params['search'] = search;
+      if (status) params['status'] = String(status);
+      if (sort) params['sort'] = sort;
+      if (dir !== 'desc') params['dir'] = dir;
+      if (page > 1) params['page'] = String(page);
+      this.router.navigate([], { queryParams: params, replaceUrl: true });
+    });
+  }
 
   readonly filtered = computed(() => {
     const q = this.search().toLowerCase();
@@ -124,6 +143,13 @@ export class Orders implements OnInit {
   });
 
   ngOnInit(): void {
+    const qp = this.route.snapshot.queryParams;
+    if (qp['search']) this.search.set(qp['search']);
+    if (qp['status']) this.statusFilter.set(qp['status']);
+    if (qp['sort']) this.sortField.set(qp['sort'] as SortField);
+    if (qp['dir']) this.sortDir.set(qp['dir'] as SortDir);
+    if (qp['page']) this.page.set(Number(qp['page']));
+
     this.orderService.getOrders().subscribe({
       next: (orders) => {
         this.orders.set(orders);

@@ -1,4 +1,5 @@
 import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { Location } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { OrderService } from '../../core/services/order.service';
@@ -59,6 +60,7 @@ export interface ParsedProduct {
   templateUrl: './order-detail.html',
 })
 export class OrderDetail implements OnInit {
+  private readonly location = inject(Location);
   private readonly route = inject(ActivatedRoute);
   private readonly orderService = inject(OrderService);
   private readonly productService = inject(ProductService);
@@ -141,6 +143,10 @@ export class OrderDetail implements OnInit {
         this.shipmentLoading.set(false);
       },
     });
+  }
+
+  goBack(): void {
+    this.location.back();
   }
 
   statusClass(status: OrderStatus): string {
