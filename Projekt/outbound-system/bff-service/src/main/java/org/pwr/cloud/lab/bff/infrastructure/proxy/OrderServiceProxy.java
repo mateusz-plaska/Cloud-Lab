@@ -2,7 +2,7 @@ package org.pwr.cloud.lab.bff.infrastructure.proxy;
 
 import lombok.extern.slf4j.Slf4j;
 import org.pwr.cloud.lab.bff.api.dto.order.CreateOrderRequest;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -11,38 +11,41 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestClient;
 import tools.jackson.databind.json.JsonMapper;
 
-import java.util.List;
 import java.util.Map;
 
 @Service
 @Slf4j
 public class OrderServiceProxy {
 
-    private final RestClient restClient;
+    private final OrderGatewayClient orderGatewayClient;
     private final JsonMapper jsonMapper;
+    private final RestClient orderRestClient;
 
     public OrderServiceProxy(
-            @Qualifier("orderServiceRestClient") RestClient restClient, JsonMapper jsonMapper) {
-        this.restClient = restClient;
+            OrderGatewayClient orderGatewayClient,
+            JsonMapper jsonMapper,
+            @Value("${services.order-gateway.url}") String orderGatewayUrl) {
+        this.orderGatewayClient = orderGatewayClient;
         this.jsonMapper = jsonMapper;
+        this.orderRestClient = RestClient.create(orderGatewayUrl);
     }
 
     public String getOrders(String customerId) {
-        return restClient
-                .get()
-                .uri(uriBuilder -> {
-                    var builder = uriBuilder.path("/api/orders");
-                    if (customerId != null) {
-                        builder = builder.queryParam("customerId", customerId);
-                    }
-                    return builder.build();
-                })
-                .retrieve()
-                .body(String.class);
+        try {
+            return orderGatewayClient.getOrders(customerId);
+        } catch (Exception e) {
+            log.warn("Order gateway unavailable: {}", e.getMessage());
+            throw e;
+        }
     }
 
     public String getOrderReport(String orderId) {
-        return restClient.get().uri("/api/orders/reports/{id}", orderId).retrieve().body(String.class);
+        try {
+            return orderGatewayClient.getOrderReport(orderId);
+        } catch (Exception e) {
+            log.warn("Order gateway unavailable for report [{}]: {}", orderId, e.getMessage());
+            throw e;
+        }
     }
 
     public String createOrder(CreateOrderRequest request) {
@@ -68,7 +71,7 @@ public class OrderServiceProxy {
                 }
             });
 
-            return restClient
+            return orderRestClient
                     .post()
                     .uri("/api/orders")
                     .contentType(MediaType.MULTIPART_FORM_DATA)

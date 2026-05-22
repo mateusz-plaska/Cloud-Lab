@@ -1,5 +1,8 @@
 package org.pwr.cloud.lab.bff.api.exception;
 
+import feign.FeignException;
+import feign.RetryableException;
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import lombok.extern.slf4j.Slf4j;
 import org.pwr.cloud.lab.common.domain.exception.DomainConflictException;
 import org.pwr.cloud.lab.common.domain.exception.DomainNotFoundException;
@@ -55,6 +58,25 @@ public class BffExceptionHandler {
     @ExceptionHandler(ResourceAccessException.class)
     public ResponseEntity<Map<String, Object>> handleServiceUnavailable(ResourceAccessException e) {
         log.error("Downstream service unavailable: {}", e.getMessage());
+        return error(HttpStatus.SERVICE_UNAVAILABLE, "Downstream service temporarily unavailable");
+    }
+
+    @ExceptionHandler(RetryableException.class)
+    public ResponseEntity<Map<String, Object>> handleFeignConnectError(RetryableException e) {
+        log.error("Downstream service unreachable: {}", e.getMessage());
+        return error(HttpStatus.SERVICE_UNAVAILABLE, "Downstream service temporarily unavailable");
+    }
+
+    @ExceptionHandler(FeignException.class)
+    public ResponseEntity<Map<String, Object>> handleFeignError(FeignException e) {
+        log.error("Downstream service error [{}]: {}", e.status(), e.getMessage());
+        HttpStatus status = HttpStatus.resolve(e.status());
+        return error(status != null ? status : HttpStatus.INTERNAL_SERVER_ERROR, "Downstream service error");
+    }
+
+    @ExceptionHandler(CallNotPermittedException.class)
+    public ResponseEntity<Map<String, Object>> handleCircuitBreakerOpen(CallNotPermittedException e) {
+        log.warn("Circuit breaker open for: {}", e.getCausingCircuitBreakerName());
         return error(HttpStatus.SERVICE_UNAVAILABLE, "Downstream service temporarily unavailable");
     }
 

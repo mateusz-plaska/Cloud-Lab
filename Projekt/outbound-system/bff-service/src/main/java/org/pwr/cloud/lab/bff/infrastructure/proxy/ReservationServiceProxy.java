@@ -1,42 +1,49 @@
 package org.pwr.cloud.lab.bff.infrastructure.proxy;
 
-import org.springframework.beans.factory.annotation.Qualifier;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClient;
 
 @Service
+@RequiredArgsConstructor
+@Slf4j
 public class ReservationServiceProxy {
 
-    private final RestClient restClient;
-
-    public ReservationServiceProxy(@Qualifier("reservationServiceRestClient") RestClient restClient) {
-        this.restClient = restClient;
-    }
+    private final ReservationClient reservationClient;
 
     public String getStocks() {
-        return restClient.get().uri("/api/stocks").retrieve().body(String.class);
+        try {
+            return reservationClient.getStocks();
+        } catch (Exception e) {
+            log.warn("Reservation service unavailable (getStocks): {}", e.getMessage());
+            throw e;
+        }
     }
 
     public void addStock(String productId, int quantity) {
-        restClient
-                .post()
-                .uri(u -> u.path("/api/stocks")
-                        .queryParam("productId", productId)
-                        .queryParam("quantity", quantity)
-                        .build())
-                .retrieve()
-                .toBodilessEntity();
+        try {
+            reservationClient.addStock(productId, quantity);
+        } catch (Exception e) {
+            log.warn("Reservation service unavailable (addStock): {}", e.getMessage());
+            throw e;
+        }
     }
 
     public String getProducts() {
-        return restClient.get().uri("/api/products").retrieve().body(String.class);
+        try {
+            return reservationClient.getProducts();
+        } catch (Exception e) {
+            log.warn("Reservation service unavailable (getProducts): {}", e.getMessage());
+            throw e;
+        }
     }
 
     public String createProduct(String name) {
-        return restClient
-                .post()
-                .uri(u -> u.path("/api/products").queryParam("name", name).build())
-                .retrieve()
-                .body(String.class);
+        try {
+            return reservationClient.createProduct(name);
+        } catch (Exception e) {
+            log.warn("Reservation service unavailable (createProduct): {}", e.getMessage());
+            throw e;
+        }
     }
 }

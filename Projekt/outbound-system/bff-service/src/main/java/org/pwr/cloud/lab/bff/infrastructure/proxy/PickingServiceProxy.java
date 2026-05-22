@@ -1,37 +1,31 @@
 package org.pwr.cloud.lab.bff.infrastructure.proxy;
 
-import org.springframework.beans.factory.annotation.Qualifier;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClient;
 
 @Service
+@RequiredArgsConstructor
+@Slf4j
 public class PickingServiceProxy {
 
-    private final RestClient restClient;
-
-    public PickingServiceProxy(@Qualifier("pickingServiceRestClient") RestClient restClient) {
-        this.restClient = restClient;
-    }
+    private final PickingClient pickingClient;
 
     public String pickItem(String orderId, String productId, int quantity) {
-        return restClient
-                .post()
-                .uri(u -> u.path("/api/picking/{orderId}/pick")
-                        .queryParam("productId", productId)
-                        .queryParam("quantity", quantity)
-                        .build(orderId))
-                .retrieve()
-                .body(String.class);
+        try {
+            return pickingClient.pickItem(orderId, productId, quantity);
+        } catch (Exception e) {
+            log.warn("Picking service unavailable for order [{}]: {}", orderId, e.getMessage());
+            throw e;
+        }
     }
 
     public String failItem(String orderId, String productId, String reason) {
-        return restClient
-                .post()
-                .uri(u -> u.path("/api/picking/{orderId}/fail")
-                        .queryParam("productId", productId)
-                        .queryParam("reason", reason)
-                        .build(orderId))
-                .retrieve()
-                .body(String.class);
+        try {
+            return pickingClient.failItem(orderId, productId, reason);
+        } catch (Exception e) {
+            log.warn("Picking service unavailable for order [{}]: {}", orderId, e.getMessage());
+            throw e;
+        }
     }
 }

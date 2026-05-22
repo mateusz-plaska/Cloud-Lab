@@ -67,7 +67,7 @@ export class Picking implements OnInit {
         const m = s.match(/^(.+) \(x(\d+)\)$/);
         if (!m) return null;
         const productId = m[1];
-        return { productId, name: map.get(productId) ?? productId.slice(0, 8) + '…', quantity: parseInt(m[2], 10) };
+        return { productId, name: map.get(productId) ?? productId, quantity: parseInt(m[2], 10) };
       })
       .filter((p): p is OrderProduct => p !== null);
   });

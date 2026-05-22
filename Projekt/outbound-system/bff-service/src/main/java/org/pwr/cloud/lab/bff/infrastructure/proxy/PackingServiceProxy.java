@@ -1,27 +1,23 @@
 package org.pwr.cloud.lab.bff.infrastructure.proxy;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.pwr.cloud.lab.bff.api.dto.packing.FinishPackingRequest;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClient;
 
 @Service
+@RequiredArgsConstructor
+@Slf4j
 public class PackingServiceProxy {
 
-    private final RestClient restClient;
-
-    public PackingServiceProxy(@Qualifier("packingServiceRestClient") RestClient restClient) {
-        this.restClient = restClient;
-    }
+    private final PackingClient packingClient;
 
     public String finishPacking(String orderId, FinishPackingRequest request) {
-        return restClient
-                .post()
-                .uri("/api/packing/{orderId}", orderId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(request)
-                .retrieve()
-                .body(String.class);
+        try {
+            return packingClient.finishPacking(orderId, request);
+        } catch (Exception e) {
+            log.warn("Packing service unavailable for order [{}]: {}", orderId, e.getMessage());
+            throw e;
+        }
     }
 }

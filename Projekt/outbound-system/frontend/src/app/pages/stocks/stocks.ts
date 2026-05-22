@@ -134,6 +134,11 @@ export class Stocks implements OnInit {
     });
   }
 
+  clampQty(): void {
+    if (!this.addQty || this.addQty < 1) this.addQty = 1;
+    else if (this.addQty > 1000) this.addQty = 1000;
+  }
+
   async addStock(): Promise<void> {
     if (!this.selectedProductId || this.addQty < 1 || this.addLoading()) return;
     this.addMsg.set('');

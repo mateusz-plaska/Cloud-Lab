@@ -1,19 +1,22 @@
 package org.pwr.cloud.lab.bff.infrastructure.proxy;
 
-import org.springframework.beans.factory.annotation.Qualifier;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClient;
 
 @Service
+@RequiredArgsConstructor
+@Slf4j
 public class ShippingServiceProxy {
 
-    private final RestClient restClient;
-
-    public ShippingServiceProxy(@Qualifier("shippingServiceRestClient") RestClient restClient) {
-        this.restClient = restClient;
-    }
+    private final ShippingClient shippingClient;
 
     public String getShipment(String orderId) {
-        return restClient.get().uri("/api/shipments/{orderId}", orderId).retrieve().body(String.class);
+        try {
+            return shippingClient.getShipment(orderId);
+        } catch (Exception e) {
+            log.warn("Shipping service unavailable for order [{}]: {}", orderId, e.getMessage());
+            throw e;
+        }
     }
 }
