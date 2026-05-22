@@ -1,6 +1,5 @@
 import { Component, DestroyRef, OnInit, computed, effect, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { NgSwitch, NgSwitchCase, NgSwitchDefault } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subject, debounceTime, switchMap } from 'rxjs';
@@ -8,30 +7,9 @@ import { AdminService } from '../../core/services/admin.service';
 import { AuthService } from '../../core/services/auth.service';
 import { OrderService } from '../../core/services/order.service';
 import { SseService } from '../../core/services/sse.service';
-import type { OrderListItem, OrderStatus, SseEventType, UserDto } from '../../types';
+import { STATUS_CLASSES, ALL_STATUSES, EVENT_TO_STATUS, PAGE_SIZE } from '../../core/constants/order.constants';
+import type { OrderListItem, OrderStatus, UserDto } from '../../types';
 import { PaginationComponent } from '../../shared/pagination';
-
-export const STATUS_CLASSES: Record<OrderStatus, string> = {
-  PLANNED: 'bg-yellow-100 text-yellow-800',
-  IN_PROGRESS: 'bg-blue-100 text-blue-800',
-  PACKED: 'bg-orange-100 text-orange-800',
-  READY: 'bg-purple-100 text-purple-800',
-  COMPLETED: 'bg-green-100 text-green-800',
-  FAILED: 'bg-red-100 text-red-800',
-};
-
-
-export const ALL_STATUSES: (OrderStatus | '')[] = [
-  '',
-  'PLANNED',
-  'IN_PROGRESS',
-  'PACKED',
-  'READY',
-  'COMPLETED',
-  'FAILED',
-];
-
-const PAGE_SIZE = 10;
 
 type SortField = 'orderId' | 'customerId' | 'status' | 'itemCount' | 'createdAt';
 type SortDir = 'asc' | 'desc';
@@ -39,7 +17,7 @@ type SortDir = 'asc' | 'desc';
 @Component({
   selector: 'app-orders',
   standalone: true,
-  imports: [RouterLink, FormsModule, NgSwitch, NgSwitchCase, NgSwitchDefault, PaginationComponent],
+  imports: [RouterLink, FormsModule, PaginationComponent],
   templateUrl: './orders.html',
 })
 export class Orders implements OnInit {
@@ -56,15 +34,6 @@ export class Orders implements OnInit {
   readonly error = signal('');
 
   private readonly refreshOrders$ = new Subject<void>();
-
-  private static readonly EVENT_TO_STATUS: Partial<Record<SseEventType, OrderStatus>> = {
-    STOCK_RESERVED: 'IN_PROGRESS',
-    ALLOCATION_FAILED: 'FAILED',
-    ORDER_PICKED: 'COMPLETED',
-    PICK_FAILED: 'FAILED',
-    PACKING_FINISHED: 'PACKED',
-    SHIPMENT_CREATED: 'READY',
-  };
 
   private readonly users = signal<UserDto[]>([]);
   private readonly userMap = computed(() => new Map(this.users().map((u) => [u.id, u.username])));
@@ -176,7 +145,7 @@ export class Orders implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (update) => {
-          const newStatus = Orders.EVENT_TO_STATUS[update.eventType];
+          const newStatus = EVENT_TO_STATUS[update.eventType];
           if (newStatus && this.orders().some((o) => o.orderId === update.orderId)) {
             this.orders.update((list) =>
               list.map((o) => (o.orderId === update.orderId ? { ...o, status: newStatus } : o)),

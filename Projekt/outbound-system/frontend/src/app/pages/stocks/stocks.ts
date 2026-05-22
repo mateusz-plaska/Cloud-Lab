@@ -1,12 +1,12 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { forkJoin } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { ProductService } from '../../core/services/product.service';
-import { StockService, StockItem } from '../../core/services/stock.service';
-import type { Product } from '../../types';
+import { StockService } from '../../core/services/stock.service';
+import { PAGE_SIZE } from '../../core/constants/order.constants';
+import type { Product, StockItem } from '../../types';
 import { PaginationComponent } from '../../shared/pagination';
-
-const PAGE_SIZE = 10;
 
 interface StockRow {
   productId: string;
@@ -103,32 +103,18 @@ export class Stocks implements OnInit {
 
   private reload(): void {
     this.dataLoading.set(true);
-    let productsLoaded = false;
-    let stocksLoaded = false;
-    const done = () => {
-      if (productsLoaded && stocksLoaded) this.dataLoading.set(false);
-    };
-
-    this.productService.getProducts().subscribe({
-      next: (p) => {
-        this.products.set(p);
-        productsLoaded = true;
-        done();
-      },
-      error: () => {
-        this.dataError.set('Nie udało się pobrać katalogu produktów');
+    this.dataError.set('');
+    forkJoin({
+      products: this.productService.getProducts(),
+      stocks: this.stockService.getStocks(),
+    }).subscribe({
+      next: ({ products, stocks }) => {
+        this.products.set(products);
+        this.stocks.set(stocks);
         this.dataLoading.set(false);
       },
-    });
-
-    this.stockService.getStocks().subscribe({
-      next: (s) => {
-        this.stocks.set(s);
-        stocksLoaded = true;
-        done();
-      },
       error: () => {
-        this.dataError.set('Nie udało się pobrać stanu magazynu');
+        this.dataError.set('Nie udało się pobrać danych');
         this.dataLoading.set(false);
       },
     });

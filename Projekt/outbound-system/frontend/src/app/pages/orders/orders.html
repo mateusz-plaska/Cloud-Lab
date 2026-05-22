@@ -47,15 +47,21 @@
             @for (col of columns; track col.field) {
               <th
                 class="cursor-pointer select-none px-6 py-3 text-left"
-                (click)="sort($any(col.field))"
+                (click)="sort(col.field)"
               >
                 <span class="flex items-center gap-1.5 font-semibold text-slate-600 hover:text-indigo-600">
                   {{ col.label }}
-                  <ng-container [ngSwitch]="sortState($any(col.field))">
-                    <svg *ngSwitchCase="'asc'" class="h-3.5 w-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"/></svg>
-                    <svg *ngSwitchCase="'desc'" class="h-3.5 w-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
-                    <svg *ngSwitchDefault class="h-3.5 w-3.5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/></svg>
-                  </ng-container>
+                  @switch (sortState(col.field)) {
+                    @case ('asc') {
+                      <svg class="h-3.5 w-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"/></svg>
+                    }
+                    @case ('desc') {
+                      <svg class="h-3.5 w-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                    }
+                    @default {
+                      <svg class="h-3.5 w-3.5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/></svg>
+                    }
+                  }
                 </span>
               </th>
             }

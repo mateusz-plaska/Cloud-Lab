@@ -24,23 +24,24 @@
       <table class="w-full min-w-[600px] text-sm">
         <thead class="border-b border-slate-200 bg-slate-50">
           <tr>
-            @for (col of [
-              { field: 'username', label: 'Użytkownik' },
-              { field: 'email', label: 'Email' },
-              { field: 'role', label: 'Rola' },
-              { field: 'createdAt', label: 'Utworzono' }
-            ]; track col.field) {
+            @for (col of columns; track col.field) {
               <th
                 class="cursor-pointer select-none px-6 py-3 text-left"
-                (click)="sort($any(col.field))"
+                (click)="sort(col.field)"
               >
                 <span class="flex items-center gap-1.5 font-semibold text-slate-600 hover:text-indigo-600">
                   {{ col.label }}
-                  <ng-container [ngSwitch]="sortState($any(col.field))">
-                    <svg *ngSwitchCase="'asc'" class="h-3.5 w-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"/></svg>
-                    <svg *ngSwitchCase="'desc'" class="h-3.5 w-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
-                    <svg *ngSwitchDefault class="h-3.5 w-3.5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/></svg>
-                  </ng-container>
+                  @switch (sortState(col.field)) {
+                    @case ('asc') {
+                      <svg class="h-3.5 w-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"/></svg>
+                    }
+                    @case ('desc') {
+                      <svg class="h-3.5 w-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                    }
+                    @default {
+                      <svg class="h-3.5 w-3.5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/></svg>
+                    }
+                  }
                 </span>
               </th>
             }
@@ -52,7 +53,7 @@
               <td class="px-6 py-4 font-medium text-slate-900">{{ user.username }}</td>
               <td class="px-6 py-4 text-slate-600">{{ user.email }}</td>
               <td class="px-6 py-4">
-                <span class="rounded-full px-2 py-1 text-xs font-semibold" [class]="roleClass($any(user.role))">
+                <span class="rounded-full px-2 py-1 text-xs font-semibold" [class]="roleClass(user.role)">
                   {{ user.role }}
                 </span>
               </td>
@@ -81,7 +82,8 @@
         <label class="mb-1 block text-xs font-medium text-slate-600">Nazwa użytkownika</label>
         <input
           type="text"
-          [(ngModel)]="newUsername"
+          [ngModel]="newUsername()"
+          (ngModelChange)="newUsername.set($event)"
           placeholder="np. jan.kowalski"
           class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
         />
@@ -90,7 +92,8 @@
         <label class="mb-1 block text-xs font-medium text-slate-600">Email</label>
         <input
           type="email"
-          [(ngModel)]="newEmail"
+          [ngModel]="newEmail()"
+          (ngModelChange)="newEmail.set($event)"
           placeholder="np. jan@firma.pl"
           class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
         />
@@ -99,7 +102,8 @@
         <label class="mb-1 block text-xs font-medium text-slate-600">Hasło</label>
         <input
           type="password"
-          [(ngModel)]="newPassword"
+          [ngModel]="newPassword()"
+          (ngModelChange)="newPassword.set($event)"
           placeholder="Hasło"
           class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
         />
@@ -107,7 +111,8 @@
       <div>
         <label class="mb-1 block text-xs font-medium text-slate-600">Rola</label>
         <select
-          [(ngModel)]="newRole"
+          [ngModel]="newRole()"
+          (ngModelChange)="newRole.set($event)"
           class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
         >
           @for (role of roles; track role) {

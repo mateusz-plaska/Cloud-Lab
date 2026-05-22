@@ -9,7 +9,8 @@
         <input
           type="text"
           name="username"
-          [(ngModel)]="username"
+          [ngModel]="username()"
+          (ngModelChange)="username.set($event)"
           autocomplete="username"
           required
           class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
@@ -21,7 +22,8 @@
         <input
           type="email"
           name="email"
-          [(ngModel)]="email"
+          [ngModel]="email()"
+          (ngModelChange)="email.set($event)"
           autocomplete="email"
           required
           class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
@@ -33,7 +35,8 @@
         <input
           type="password"
           name="password"
-          [(ngModel)]="password"
+          [ngModel]="password()"
+          (ngModelChange)="password.set($event)"
           autocomplete="new-password"
           required
           minlength="6"

@@ -13,8 +13,8 @@ export class Login {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
 
-  username = '';
-  password = '';
+  readonly username = signal('');
+  readonly password = signal('');
   readonly loading = signal(false);
   readonly error = signal('');
 
@@ -23,8 +23,8 @@ export class Login {
     this.error.set('');
     this.loading.set(true);
     try {
-      await this.auth.login({ username: this.username, password: this.password });
-      this.router.navigate(['/dashboard']);
+      await this.auth.login({ username: this.username(), password: this.password() });
+      await this.router.navigate(['/dashboard']);
     } catch {
       this.error.set('Nieprawidłowa nazwa użytkownika lub hasło');
     } finally {

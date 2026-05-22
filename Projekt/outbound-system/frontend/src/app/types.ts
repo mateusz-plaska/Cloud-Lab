@@ -97,6 +97,17 @@ export interface UserDto {
   id: string;
   username: string;
   email: string;
-  role: string;
+  role: Role;
   createdAt: string;
+}
+
+export interface OrderProduct {
+  productId: string;
+  name: string;
+  quantity: number;
+}
+
+export interface StockItem {
+  productId: string;
+  quantity: number;
 }

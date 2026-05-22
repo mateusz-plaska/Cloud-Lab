@@ -4,8 +4,8 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { OrderService } from '../../core/services/order.service';
 import { ProductService } from '../../core/services/product.service';
-import { StockService, StockItem } from '../../core/services/stock.service';
-import type { OrderItem, Product } from '../../types';
+import { StockService } from '../../core/services/stock.service';
+import type { OrderItem, Product, StockItem } from '../../types';
 
 interface ProductOption {
   productId: string;
@@ -83,7 +83,7 @@ export class OrderCreate implements OnInit {
       await new Promise<void>((resolve, reject) => {
         this.orderService.createOrder({ userId, items }).subscribe({ next: () => resolve(), error: reject });
       });
-      this.router.navigate(['/orders']);
+      await this.router.navigate(['/orders']);
     } catch {
       this.error.set('Nie udało się złożyć zamówienia');
     } finally {

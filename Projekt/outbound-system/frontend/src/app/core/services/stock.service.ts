@@ -1,11 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { API_URL } from '../api';
-
-export interface StockItem {
-  productId: string;
-  quantity: number;
-}
+import type { StockItem } from '../../types';
 
 @Injectable({ providedIn: 'root' })
 export class StockService {

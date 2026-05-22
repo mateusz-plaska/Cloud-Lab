@@ -1,14 +1,12 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
-import { NgSwitch, NgSwitchCase, NgSwitchDefault } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../core/services/admin.service';
+import { PAGE_SIZE } from '../../core/constants/order.constants';
 import type { Role, UserDto } from '../../types';
 import { PaginationComponent } from '../../shared/pagination';
 
 type SortField = 'username' | 'email' | 'role' | 'createdAt';
 type SortDir = 'asc' | 'desc';
-
-const PAGE_SIZE = 10;
 
 const ROLE_CLASSES: Record<Role, string> = {
   ADMIN: 'bg-red-100 text-red-800',
@@ -19,7 +17,7 @@ const ROLE_CLASSES: Record<Role, string> = {
 @Component({
   selector: 'app-admin',
   standalone: true,
-  imports: [FormsModule, NgSwitch, NgSwitchCase, NgSwitchDefault, PaginationComponent],
+  imports: [FormsModule, PaginationComponent],
   templateUrl: './admin.html',
 })
 export class Admin implements OnInit {
@@ -33,6 +31,13 @@ export class Admin implements OnInit {
   readonly sortField = signal<SortField | null>('createdAt');
   readonly sortDir = signal<SortDir>('desc');
   readonly page = signal(1);
+
+  readonly columns: { field: SortField; label: string }[] = [
+    { field: 'username', label: 'Użytkownik' },
+    { field: 'email', label: 'Email' },
+    { field: 'role', label: 'Rola' },
+    { field: 'createdAt', label: 'Utworzono' },
+  ];
 
   readonly filtered = computed(() => {
     const q = this.search().toLowerCase();
@@ -67,10 +72,10 @@ export class Admin implements OnInit {
     return list.slice((safe - 1) * PAGE_SIZE, safe * PAGE_SIZE);
   });
 
-  newUsername = '';
-  newEmail = '';
-  newPassword = '';
-  newRole: Role = 'OPERATOR';
+  readonly newUsername = signal('');
+  readonly newEmail = signal('');
+  readonly newPassword = signal('');
+  readonly newRole = signal<Role>('OPERATOR');
   readonly createLoading = signal(false);
   readonly createMsg = signal('');
   readonly createError = signal('');
@@ -98,18 +103,18 @@ export class Admin implements OnInit {
     try {
       await new Promise<UserDto>((res, rej) =>
         this.adminService.createUser({
-          username: this.newUsername.trim(),
-          email: this.newEmail.trim(),
-          password: this.newPassword,
-          role: this.newRole,
+          username: this.newUsername().trim(),
+          email: this.newEmail().trim(),
+          password: this.newPassword(),
+          role: this.newRole(),
         }).subscribe({ next: res, error: rej }),
       ).then((created) => {
         this.users.update((list) => [created, ...list]);
         this.createMsg.set(`Konto „${created.username}" (${created.role}) zostało utworzone`);
-        this.newUsername = '';
-        this.newEmail = '';
-        this.newPassword = '';
-        this.newRole = 'OPERATOR';
+        this.newUsername.set('');
+        this.newEmail.set('');
+        this.newPassword.set('');
+        this.newRole.set('OPERATOR');
       });
     } catch {
       this.createError.set('Nie udało się utworzyć konta');

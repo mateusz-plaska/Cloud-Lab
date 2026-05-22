@@ -13,9 +13,9 @@ export class Register {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
 
-  username = '';
-  email = '';
-  password = '';
+  readonly username = signal('');
+  readonly email = signal('');
+  readonly password = signal('');
   readonly loading = signal(false);
   readonly error = signal('');
 
@@ -24,8 +24,8 @@ export class Register {
     this.error.set('');
     this.loading.set(true);
     try {
-      await this.auth.register({ username: this.username, email: this.email, password: this.password });
-      this.router.navigate(['/dashboard']);
+      await this.auth.register({ username: this.username(), email: this.email(), password: this.password() });
+      await this.router.navigate(['/dashboard']);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : '';
       this.error.set(msg.includes('already') ? msg : 'Rejestracja nie powiodła się');

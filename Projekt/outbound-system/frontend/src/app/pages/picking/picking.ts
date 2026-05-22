@@ -3,16 +3,10 @@ import { FormsModule } from '@angular/forms';
 import { OrderService } from '../../core/services/order.service';
 import { PickingService } from '../../core/services/picking.service';
 import { ProductService } from '../../core/services/product.service';
-import type { OrderListItem, OrderReport, Product } from '../../types';
+import { parseProducts } from '../../core/utils/product-parser';
+import { PAGE_SIZE } from '../../core/constants/order.constants';
+import type { OrderListItem, OrderProduct, OrderReport, Product } from '../../types';
 import { PaginationComponent } from '../../shared/pagination';
-
-const PAGE_SIZE = 10;
-
-interface OrderProduct {
-  productId: string;
-  name: string;
-  quantity: number;
-}
 
 @Component({
   selector: 'app-picking',
@@ -60,16 +54,8 @@ export class Picking implements OnInit {
 
   readonly orderProducts = computed((): OrderProduct[] => {
     const report = this.orderReport();
-    const map = this.productMap();
     if (!report) return [];
-    return report.products
-      .map((s) => {
-        const m = s.match(/^(.+) \(x(\d+)\)$/);
-        if (!m) return null;
-        const productId = m[1];
-        return { productId, name: map.get(productId) ?? productId, quantity: parseInt(m[2], 10) };
-      })
-      .filter((p): p is OrderProduct => p !== null);
+    return parseProducts(report.products, this.productMap());
   });
 
   readonly remainingProducts = computed(() => {
