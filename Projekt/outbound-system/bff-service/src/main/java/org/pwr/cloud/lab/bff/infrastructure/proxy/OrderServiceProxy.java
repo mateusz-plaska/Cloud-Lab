@@ -1,34 +1,20 @@
 package org.pwr.cloud.lab.bff.infrastructure.proxy;
 
+import feign.form.FormData;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.pwr.cloud.lab.bff.api.dto.order.CreateOrderRequest;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.web.client.RestClient;
-import tools.jackson.databind.json.JsonMapper;
 
-import java.util.Map;
+import java.nio.charset.StandardCharsets;
 
 @Service
+@RequiredArgsConstructor
 @Slf4j
 public class OrderServiceProxy {
 
     private final OrderGatewayClient orderGatewayClient;
-    private final JsonMapper jsonMapper;
-    private final RestClient orderRestClient;
-
-    public OrderServiceProxy(
-            OrderGatewayClient orderGatewayClient,
-            JsonMapper jsonMapper,
-            @Value("${services.order-gateway.url}") String orderGatewayUrl) {
-        this.orderGatewayClient = orderGatewayClient;
-        this.jsonMapper = jsonMapper;
-        this.orderRestClient = RestClient.create(orderGatewayUrl);
-    }
 
     public String getOrders(String customerId) {
         try {
@@ -50,34 +36,18 @@ public class OrderServiceProxy {
 
     public String createOrder(CreateOrderRequest request) {
         try {
-            var dataMap = Map.of(
-                    "customerId", request.userId().toCustomerId(),
-                    "items", request.items().stream()
-                            .map(item -> Map.of("productId", item.productId(), "quantity", item.quantity()))
+            var data = new OrderGatewayClient.DataPart(
+                    request.userId().toCustomerId().value(),
+                    request.items().stream()
+                            .map(item -> new OrderGatewayClient.DataPart.Item(item.productId().value(), item.quantity()))
                             .toList());
-            byte[] dataBytes = jsonMapper.writeValueAsBytes(dataMap);
-            byte[] dummyFile = "{\"source\":\"web\"}".getBytes();
 
-            var body = new LinkedMultiValueMap<String, Object>();
+            var file = new FormData(
+                    MediaType.TEXT_PLAIN_VALUE,
+                    "order-metadata.txt",
+                    "source=web".getBytes(StandardCharsets.UTF_8));
 
-            var dataHeaders = new HttpHeaders();
-            dataHeaders.setContentType(MediaType.APPLICATION_JSON);
-            body.add("data", new org.springframework.http.HttpEntity<>(dataBytes, dataHeaders));
-
-            body.add("file", new ByteArrayResource(dummyFile) {
-                @Override
-                public String getFilename() {
-                    return "order-metadata.json";
-                }
-            });
-
-            return orderRestClient
-                    .post()
-                    .uri("/api/orders")
-                    .contentType(MediaType.MULTIPART_FORM_DATA)
-                    .body(body)
-                    .retrieve()
-                    .body(String.class);
+            return orderGatewayClient.createOrder(data, file);
         } catch (Exception e) {
             log.error("Failed to create order via proxy", e);
             throw new RuntimeException("Failed to forward order creation: " + e.getMessage(), e);

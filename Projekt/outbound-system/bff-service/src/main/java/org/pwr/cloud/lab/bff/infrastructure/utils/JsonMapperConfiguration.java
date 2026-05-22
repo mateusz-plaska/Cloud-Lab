@@ -1,7 +1,11 @@
 package org.pwr.cloud.lab.bff.infrastructure.utils;
 
+import feign.form.FormData;
+import org.springframework.cloud.openfeign.support.AbstractFormWriter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.MediaType;
+import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.SerializationFeature;
 import tools.jackson.databind.cfg.DateTimeFeature;
 import tools.jackson.databind.cfg.EnumFeature;
@@ -36,5 +40,25 @@ public class JsonMapperConfiguration {
                 .configure(FAIL_ON_UNKNOWN_PROPERTIES, false)
                 .defaultTimeZone(TimeZone.getDefault())
                 .build();
+    }
+
+    @Bean
+    public AbstractFormWriter jsonMultipartWriter(ObjectMapper objectMapper) {
+        return new AbstractFormWriter() {
+            @Override
+            protected MediaType getContentType() {
+                return MediaType.APPLICATION_JSON;
+            }
+
+            @Override
+            protected String writeAsString(Object object) {
+                return objectMapper.writeValueAsString(object);
+            }
+
+            @Override
+            public boolean isApplicable(Object object) {
+                return !(object instanceof FormData) && super.isApplicable(object);
+            }
+        };
     }
 }
