@@ -75,5 +75,32 @@
         }
       </div>
     </div>
+
+    @if (report()!.status === 'READY' || shipment()) {
+      <div class="mt-6 rounded-xl bg-white p-6 shadow-sm">
+        <h3 class="mb-4 font-semibold text-slate-700">Przesyłka</h3>
+
+        @if (shipmentLoading()) {
+          <p class="text-sm text-slate-400">Ładowanie danych przesyłki...</p>
+        } @else if (shipmentError()) {
+          <p class="text-sm text-red-600">{{ shipmentError() }}</p>
+        } @else if (shipment()) {
+          <div class="grid gap-6 sm:grid-cols-3">
+            <div>
+              <p class="text-xs font-medium uppercase tracking-wide text-slate-400">Numer śledzenia</p>
+              <p class="mt-1 font-mono text-sm font-semibold text-indigo-700 break-all">{{ shipment()!.trackingNumber }}</p>
+            </div>
+            <div>
+              <p class="text-xs font-medium uppercase tracking-wide text-slate-400">Koszt wysyłki</p>
+              <p class="mt-1 text-sm font-semibold text-slate-800">{{ formatCost(shipment()!.shippingCost) }}</p>
+            </div>
+            <div>
+              <p class="text-xs font-medium uppercase tracking-wide text-slate-400">Data nadania</p>
+              <p class="mt-1 text-sm text-slate-700">{{ formatDate(shipment()!.shippedAt) }}</p>
+            </div>
+          </div>
+        }
+      </div>
+    }
   }
 </div>

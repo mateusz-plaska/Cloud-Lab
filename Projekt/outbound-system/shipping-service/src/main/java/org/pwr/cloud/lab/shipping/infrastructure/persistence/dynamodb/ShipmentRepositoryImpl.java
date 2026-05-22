@@ -1,4 +1,4 @@
-package org.pwr.cloud.lab.shipping.infrastructure.persistence;
+package org.pwr.cloud.lab.shipping.infrastructure.persistence.dynamodb;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;

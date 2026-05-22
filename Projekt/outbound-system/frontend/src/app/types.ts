@@ -86,6 +86,13 @@ export interface OrderStatusUpdate {
   timestamp: string;
 }
 
+export interface Shipment {
+  orderId: string;
+  trackingNumber: string;
+  shippingCost: number;
+  shippedAt: string;
+}
+
 export interface UserDto {
   id: string;
   username: string;

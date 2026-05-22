@@ -3,8 +3,9 @@ import { ActivatedRoute } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { OrderService } from '../../core/services/order.service';
 import { ProductService } from '../../core/services/product.service';
+import { ShipmentService } from '../../core/services/shipment.service';
 import { SseService } from '../../core/services/sse.service';
-import type { OrderReport, OrderStatus, OrderStatusUpdate, Product, SseEventType } from '../../types';
+import type { OrderReport, OrderStatus, OrderStatusUpdate, Product, Shipment, SseEventType } from '../../types';
 
 const STATUS_CLASSES: Record<OrderStatus, string> = {
   PLANNED: 'bg-yellow-100 text-yellow-800',
@@ -61,6 +62,7 @@ export class OrderDetail implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly orderService = inject(OrderService);
   private readonly productService = inject(ProductService);
+  private readonly shipmentService = inject(ShipmentService);
   private readonly sseService = inject(SseService);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -68,6 +70,10 @@ export class OrderDetail implements OnInit {
   readonly loading = signal(true);
   readonly error = signal('');
   readonly updates = signal<OrderStatusUpdate[]>([]);
+
+  readonly shipment = signal<Shipment | null>(null);
+  readonly shipmentLoading = signal(false);
+  readonly shipmentError = signal('');
 
   private readonly products = signal<Product[]>([]);
   private readonly productMap = computed(() => new Map(this.products().map((p) => [p.productId, p.name])));
@@ -95,6 +101,9 @@ export class OrderDetail implements OnInit {
       next: (report) => {
         this.report.set(report);
         this.loading.set(false);
+        if (report.status === 'READY') {
+          this.fetchShipment(orderId);
+        }
       },
       error: () => {
         this.error.set('Nie udało się pobrać zamówienia');
@@ -112,8 +121,26 @@ export class OrderDetail implements OnInit {
           if (newStatus) {
             this.report.update((r) => (r ? { ...r, status: newStatus } : r));
           }
+          if (update.eventType === 'SHIPMENT_CREATED') {
+            this.fetchShipment(orderId);
+          }
         },
       });
+  }
+
+  private fetchShipment(orderId: string): void {
+    this.shipmentLoading.set(true);
+    this.shipmentError.set('');
+    this.shipmentService.getShipment(orderId).subscribe({
+      next: (s) => {
+        this.shipment.set(s);
+        this.shipmentLoading.set(false);
+      },
+      error: () => {
+        this.shipmentError.set('Nie udało się pobrać danych przesyłki');
+        this.shipmentLoading.set(false);
+      },
+    });
   }
 
   statusClass(status: OrderStatus): string {
@@ -138,5 +165,9 @@ export class OrderDetail implements OnInit {
 
   formatDate(iso: string): string {
     return new Date(iso).toLocaleString('pl-PL');
+  }
+
+  formatCost(cost: number): string {
+    return new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' }).format(cost);
   }
 }

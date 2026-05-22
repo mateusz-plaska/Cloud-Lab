@@ -1,4 +1,4 @@
-package org.pwr.cloud.lab.shipping.infrastructure.persistence;
+package org.pwr.cloud.lab.shipping.infrastructure.persistence.dynamodb;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

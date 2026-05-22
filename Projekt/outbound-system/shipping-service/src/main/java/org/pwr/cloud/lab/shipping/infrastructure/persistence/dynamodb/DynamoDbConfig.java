@@ -1,4 +1,4 @@
-package org.pwr.cloud.lab.shipping.infrastructure.persistence;
+package org.pwr.cloud.lab.shipping.infrastructure.persistence.dynamodb;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

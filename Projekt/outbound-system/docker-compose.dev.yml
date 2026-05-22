@@ -131,7 +131,13 @@ services:
       - AWS_SECRET_ACCESS_KEY=local
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
       - RABBITMQ_EXCHANGE=outbound.events
+      - RDS_HOST=postgres
+      - RDS_PORT=5432
+      - SHIPPING_DB_NAME=shippingdb
+      - RDS_USERNAME=postgres
+      - RDS_PASSWORD=postgres
     depends_on:
+      - postgres
       - rabbitmq
       - dynamodb-init
     networks:
