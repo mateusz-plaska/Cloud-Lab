@@ -9,6 +9,11 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
       - ./init-dbs.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     networks:
       - outbound-net
 
@@ -20,6 +25,11 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
     networks:
       - outbound-net
 
@@ -32,29 +42,6 @@ services:
       - MINIO_ROOT_USER=minioadmin
       - MINIO_ROOT_PASSWORD=minioadmin
     command: server /data --console-address ":9001"
-    networks:
-      - outbound-net
-
-  order-gateway-service:
-    build:
-      context: .
-      dockerfile: order-gateway-service/Dockerfile
-    ports:
-      - "8081:8081"
-    environment:
-      - RDS_HOST=postgres
-      - RDS_PORT=5432
-      - ORDER_DB_NAME=orderdb
-      - RDS_USERNAME=postgres
-      - RDS_PASSWORD=postgres
-      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
-      - RABBITMQ_EXCHANGE=outbound.events
-      - S3_ENDPOINT=http://minio:9000
-      - AWS_BUCKET_NAME=orders-local
-    depends_on:
-      - postgres
-      - rabbitmq
-      - minio
     networks:
       - outbound-net
 
@@ -102,6 +89,59 @@ services:
     networks:
       - outbound-net
 
+  order-gateway-service:
+    build:
+      context: .
+      dockerfile: order-gateway-service/Dockerfile
+    ports:
+      - "8081:8081"
+    environment:
+      - RDS_HOST=postgres
+      - RDS_PORT=5432
+      - ORDER_DB_NAME=orderdb
+      - RDS_USERNAME=postgres
+      - RDS_PASSWORD=postgres
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+      - RABBITMQ_EXCHANGE=outbound.events
+      - S3_ENDPOINT=http://minio:9000
+      - AWS_BUCKET_NAME=orders-local
+      - AWS_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=minioadmin
+      - AWS_SECRET_ACCESS_KEY=minioadmin
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      minio:
+        condition: service_started
+    restart: on-failure
+    networks:
+      - outbound-net
+
+  packing-service:
+    build:
+      context: .
+      dockerfile: packing-service/Dockerfile
+    ports:
+      - "8082:8082"
+    environment:
+      - RDS_HOST=postgres
+      - RDS_PORT=5432
+      - PACKING_DB_NAME=packingdb
+      - RDS_USERNAME=postgres
+      - RDS_PASSWORD=postgres
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+      - RABBITMQ_EXCHANGE=outbound.events
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: on-failure
+    networks:
+      - outbound-net
+
   picking-service:
     build:
       context: .
@@ -116,8 +156,34 @@ services:
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
       - RABBITMQ_EXCHANGE=outbound.events
     depends_on:
-      - rabbitmq
-      - dynamodb-init
+      rabbitmq:
+        condition: service_healthy
+      dynamodb-init:
+        condition: service_completed_successfully
+    restart: on-failure
+    networks:
+      - outbound-net
+
+  reservation-service:
+    build:
+      context: .
+      dockerfile: reservation-service/Dockerfile
+    ports:
+      - "8084:8084"
+    environment:
+      - RDS_HOST=postgres
+      - RDS_PORT=5432
+      - RESERVATION_DB_NAME=reservationdb
+      - RDS_USERNAME=postgres
+      - RDS_PASSWORD=postgres
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+      - RABBITMQ_EXCHANGE=outbound.events
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: on-failure
     networks:
       - outbound-net
 
@@ -140,9 +206,54 @@ services:
       - RDS_USERNAME=postgres
       - RDS_PASSWORD=postgres
     depends_on:
-      - postgres
-      - rabbitmq
-      - dynamodb-init
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      dynamodb-init:
+        condition: service_completed_successfully
+    restart: on-failure
+    networks:
+      - outbound-net
+
+  bff-service:
+    build:
+      context: .
+      dockerfile: bff-service/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - RDS_HOST=postgres
+      - RDS_PORT=5432
+      - BFF_DB_NAME=bffdb
+      - RDS_USERNAME=postgres
+      - RDS_PASSWORD=postgres
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+      - RABBITMQ_EXCHANGE=outbound.events
+      - JWT_SECRET=c91a813ba3d19c6162dd2c9fac50f7bbfd96adf58d9be7a5afb2e0685c72b47f
+      - CORS_ALLOWED_ORIGINS=http://localhost:4200
+      - ORDER_GATEWAY_URL=http://order-gateway-service:8081
+      - PACKING_SERVICE_URL=http://packing-service:8082
+      - PICKING_SERVICE_URL=http://picking-service:8083
+      - RESERVATION_SERVICE_URL=http://reservation-service:8084
+      - SHIPPING_SERVICE_URL=http://shipping-service:8085
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: on-failure
+    networks:
+      - outbound-net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "4200:80"
+    depends_on:
+      - bff-service
     networks:
       - outbound-net
 

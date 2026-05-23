@@ -65,6 +65,16 @@ services:
     networks:
       - outbound-net
 
+  frontend:
+    image: mateuszplaska/frontend:latest
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "4200:80"
+    networks:
+      - outbound-net
+
 networks:
   outbound-net:
     driver: bridge
