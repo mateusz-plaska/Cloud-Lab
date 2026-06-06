@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: packing-service-deployment
+  labels:
+    app: packing-service
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: packing-service
+
+  template:
+    metadata:
+      labels:
+        app: packing-service
+
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: packing-service
+          image: mateuszplaska/packing-service:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8082
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          envFrom:
+            - configMapRef:
+                name: outbound-configmap
+            - secretRef:
+                name: outbound-secret
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: packing-service
+  labels:
+    app: packing-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: packing-service
+  ports:
+    - protocol: TCP
+      port: 8082
+      targetPort: 8082
