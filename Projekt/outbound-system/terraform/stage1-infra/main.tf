@@ -95,3 +95,31 @@ resource "postgresql_database" "reservation_db" {
 resource "postgresql_database" "packing_db" {
   name = var.packing_db_name
 }
+
+data "aws_iam_role" "lab_role" {
+  name = "LabRole"
+}
+
+resource "aws_eks_cluster" "main_cluster" {
+  name     = "outbound-system-cluster"
+  role_arn = data.aws_iam_role.lab_role.arn
+
+  vpc_config {
+    subnet_ids  = [aws_default_subnet.default_az1.id, aws_default_subnet.default_az2.id]
+  }
+}
+
+resource "aws_eks_node_group" "main_nodes" {
+  cluster_name    = aws_eks_cluster.main_cluster.name
+  node_group_name = "outbound-system-nodes"
+  node_role_arn   = data.aws_iam_role.lab_role.arn
+  subnet_ids      = aws_eks_cluster.main_cluster.vpc_config[0].subnet_ids
+
+  scaling_config {
+    desired_size = 2
+    max_size     = 3
+    min_size     = 1
+  }
+
+  instance_types = ["t3.medium"]
+}

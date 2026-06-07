@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: picking-service-deployment
+  namespace: default
+  labels:
+    app: picking-service
+spec:
+  replicas: 3
+
+  selector:
+    matchLabels:
+      app: picking-service
+
+  template:
+    metadata:
+      labels:
+        app: picking-service
+
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: picking-service
+          image: mateuszplaska/picking-service:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8083
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          envFrom:
+            - configMapRef:
+                name: outbound-configmap
+            - secretRef:
+                name: outbound-secret

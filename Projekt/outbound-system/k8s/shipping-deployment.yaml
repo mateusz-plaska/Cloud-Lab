@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shipping-service-deployment
+  namespace: default
+  labels:
+    app: shipping-service
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: shipping-service
+
+  template:
+    metadata:
+      labels:
+        app: shipping-service
+
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: shipping-service
+          image: mateuszplaska/shipping-service:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8085
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "250m"
+          envFrom:
+            - configMapRef:
+                name: outbound-configmap
+            - secretRef:
+                name: outbound-secret
