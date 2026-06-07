@@ -9,6 +9,7 @@ val services =
         "picking-service",
         "reservation-service",
         "shipping-service",
+        "qr-generator-lambda",
     )
 
 for (service in services) {

@@ -38,18 +38,22 @@ allprojects {
 
 subprojects {
     apply(plugin = "java")
+    java.sourceCompatibility = JavaVersion.VERSION_21
+
+    tasks.test {
+        useJUnitPlatform()
+    }
+}
+
+val springBootProjects = subprojects.filter { it.name !in listOf("qr-generator-lambda") }
+
+configure(springBootProjects) {
     apply(plugin = "org.springframework.boot")
     apply(plugin = "io.spring.dependency-management")
     apply(plugin = "io.freefair.lombok")
 
-    java.sourceCompatibility = JavaVersion.VERSION_21
-
     dependencies {
         implementation("org.slf4j:slf4j-api")
         testImplementation("org.springframework.boot:spring-boot-starter-test")
-    }
-
-    tasks.test {
-        useJUnitPlatform()
     }
 }
