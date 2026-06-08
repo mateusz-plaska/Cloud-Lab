@@ -27,7 +27,13 @@ export class AuthService {
 
   constructor() {
     (['mousemove', 'keydown', 'click', 'touchstart'] as const).forEach((e) =>
-      document.addEventListener(e, () => { this.lastActivityMs = Date.now(); }, { passive: true }),
+      document.addEventListener(
+        e,
+        () => {
+          this.lastActivityMs = Date.now();
+        },
+        { passive: true },
+      ),
     );
     if (this.isAuthenticated()) {
       const expMs = this.getTokenExpiryMs();
@@ -49,6 +55,13 @@ export class AuthService {
   async register(request: RegisterRequest): Promise<void> {
     const response = await firstValueFrom(
       this.http.post<AuthResponse>(`${API_URL}/auth/register`, request),
+    );
+    this.saveSession(response);
+  }
+
+  async exchangeSso(code: string, codeVerifier: string): Promise<void> {
+    const response = await firstValueFrom(
+      this.http.post<AuthResponse>(`${API_URL}/auth/sso/exchange`, { code, codeVerifier }),
     );
     this.saveSession(response);
   }

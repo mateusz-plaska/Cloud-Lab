@@ -22,6 +22,14 @@ export interface AuthResponse {
   role: string;
 }
 
+export interface SsoConfig {
+  enabled: boolean;
+  authorizationUri: string;
+  clientId: string;
+  redirectUri: string;
+  scopes: string;
+}
+
 export interface LoginRequest {
   username: string;
   password: string;

@@ -1,0 +1,12 @@
+<div class="flex min-h-screen items-center justify-center bg-slate-900">
+  <div class="w-full max-w-sm rounded-xl bg-white p-8 text-center shadow-lg">
+    @if (error()) {
+      <h1 class="mb-2 text-lg font-semibold text-red-600">Błąd logowania</h1>
+      <p class="text-sm text-slate-500">{{ error() }}</p>
+      <p class="mt-2 text-xs text-slate-400">Za chwilę wrócisz do ekranu logowania…</p>
+    } @else {
+      <h1 class="mb-2 text-lg font-semibold text-slate-900">Logowanie…</h1>
+      <p class="text-sm text-slate-500">Trwa weryfikacja konta, proszę czekać.</p>
+    }
+  </div>
+</div>

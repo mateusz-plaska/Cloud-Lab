@@ -12,6 +12,10 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/register/register').then((m) => m.Register),
   },
   {
+    path: 'auth/callback',
+    loadComponent: () => import('./pages/auth-callback/auth-callback').then((m) => m.AuthCallback),
+  },
+  {
     path: '',
     loadComponent: () => import('./pages/shell/shell').then((m) => m.Shell),
     canActivate: [authGuard],
@@ -26,14 +30,12 @@ export const routes: Routes = [
       },
       {
         path: 'orders/new',
-        loadComponent: () =>
-          import('./pages/order-create/order-create').then((m) => m.OrderCreate),
+        loadComponent: () => import('./pages/order-create/order-create').then((m) => m.OrderCreate),
         canActivate: [roleGuard('USER')],
       },
       {
         path: 'orders/:id',
-        loadComponent: () =>
-          import('./pages/order-detail/order-detail').then((m) => m.OrderDetail),
+        loadComponent: () => import('./pages/order-detail/order-detail').then((m) => m.OrderDetail),
       },
       {
         path: 'picking',

@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../core/services/auth.service';
+import { SsoService } from '../../core/services/sso.service';
 
 @Component({
   selector: 'app-login',
@@ -13,11 +14,18 @@ import { AuthService } from '../../core/services/auth.service';
 export class Login {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly sso = inject(SsoService);
 
   readonly username = signal('');
   readonly password = signal('');
   readonly loading = signal(false);
   readonly error = signal('');
+
+  readonly ssoEnabled = this.sso.enabled;
+
+  loginWithSso(): void {
+    void this.sso.startLogin();
+  }
 
   async submit(): Promise<void> {
     if (this.loading()) return;
