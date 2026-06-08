@@ -23,7 +23,8 @@ public class SsoConfig {
 
     @Bean
     public JwtDecoder ssoJwtDecoder() {
-        var decoder = NimbusJwtDecoder.withIssuerLocation(properties.issuerUri()).build();
+        var decoder =
+                NimbusJwtDecoder.withIssuerLocation(properties.issuerUri()).build();
         decoder.setJwtValidator(new DelegatingOAuth2TokenValidator<>(
                 JwtValidators.createDefaultWithIssuer(properties.issuerUri()), audienceValidator()));
         return decoder;

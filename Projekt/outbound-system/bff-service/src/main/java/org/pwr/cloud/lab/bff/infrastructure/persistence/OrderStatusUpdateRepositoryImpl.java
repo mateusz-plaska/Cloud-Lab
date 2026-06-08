@@ -2,11 +2,14 @@ package org.pwr.cloud.lab.bff.infrastructure.persistence;
 
 import lombok.RequiredArgsConstructor;
 import org.pwr.cloud.lab.bff.api.dto.sse.OrderStatusUpdate;
+import org.pwr.cloud.lab.bff.api.dto.sse.SseEventType;
 import org.pwr.cloud.lab.bff.domain.repository.OrderStatusUpdateRepository;
 import org.pwr.cloud.lab.bff.infrastructure.persistence.entity.OrderStatusUpdateEntity;
 import org.pwr.cloud.lab.bff.infrastructure.persistence.jpa.OrderStatusUpdateJpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 
 @Repository
@@ -23,6 +26,33 @@ public class OrderStatusUpdateRepositoryImpl implements OrderStatusUpdateReposit
     @Override
     public List<OrderStatusUpdate> findAllByOrderIdOrderedByTimestampAsc(String orderId) {
         return orderStatusUpdateJpaRepository.findAllByOrderIdOrderByTimestampAsc(orderId).stream()
+                .map(this::toDomain)
+                .toList();
+    }
+
+    @Override
+    public List<OrderStatusUpdate> findByTimestampBetween(Instant from, Instant to) {
+        return orderStatusUpdateJpaRepository.findByTimestampBetween(from, to).stream()
+                .map(this::toDomain)
+                .toList();
+    }
+
+    @Override
+    public List<OrderStatusUpdate> findByEventTypeAndTimestampBetween(
+            SseEventType eventType, Instant from, Instant to) {
+        return orderStatusUpdateJpaRepository.findByEventTypeAndTimestampBetween(eventType, from, to).stream()
+                .map(this::toDomain)
+                .toList();
+    }
+
+    @Override
+    public long count() {
+        return orderStatusUpdateJpaRepository.count();
+    }
+
+    @Override
+    public List<OrderStatusUpdate> findByOrderIdIn(Collection<String> orderIds) {
+        return orderStatusUpdateJpaRepository.findByOrderIdIn(orderIds).stream()
                 .map(this::toDomain)
                 .toList();
     }

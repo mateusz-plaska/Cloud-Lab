@@ -14,7 +14,9 @@
       @for (entry of statusEntries(); track entry[0]) {
         <div class="rounded-xl bg-white p-6 shadow-sm">
           <p class="text-sm font-medium text-slate-500">{{ entry[0] }}</p>
-          <p class="mt-2 text-3xl font-bold" [style.color]="statusColor(entry[0])">{{ entry[1] }}</p>
+          <p class="mt-2 text-3xl font-bold" [style.color]="statusColor(entry[0])">
+            {{ entry[1] }}
+          </p>
         </div>
       }
     </div>
@@ -24,6 +26,177 @@
         <h3 class="mb-4 text-sm font-semibold text-slate-700">Zamówienia wg statusu</h3>
         <div class="h-56">
           <canvas baseChart [data]="chartData()" [type]="'bar'" [options]="chartOptions"></canvas>
+        </div>
+      </div>
+    }
+
+    @if (isOperatorOrAdmin()) {
+      <div class="mt-8">
+        <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <h3 class="text-sm font-semibold text-slate-700">Metryki operacyjne</h3>
+          <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-medium text-slate-400">Zakres</span>
+              <div
+                class="inline-flex flex-wrap rounded-lg border border-slate-200 bg-white p-1 shadow-sm"
+              >
+                @for (r of ranges; track r.key) {
+                  <button
+                    type="button"
+                    (click)="selectRange(r.key)"
+                    class="rounded-md px-3 py-1 text-xs font-medium transition-colors"
+                    [class.bg-indigo-600]="selectedRange() === r.key"
+                    [class.text-white]="selectedRange() === r.key"
+                    [class.text-slate-600]="selectedRange() !== r.key"
+                  >
+                    {{ r.label }}
+                  </button>
+                }
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-medium text-slate-400">Dokładność</span>
+              <div
+                class="inline-flex flex-wrap rounded-lg border border-slate-200 bg-white p-1 shadow-sm"
+              >
+                <button
+                  type="button"
+                  (click)="selectGranularity(auto)"
+                  class="rounded-md px-3 py-1 text-xs font-medium transition-colors"
+                  [class.bg-indigo-600]="selectedGranularity() === auto"
+                  [class.text-white]="selectedGranularity() === auto"
+                  [class.text-slate-600]="selectedGranularity() !== auto"
+                >
+                  Auto
+                </button>
+                @for (g of granularityOptions(); track g.key) {
+                  <button
+                    type="button"
+                    (click)="selectGranularity(g.key)"
+                    class="rounded-md px-3 py-1 text-xs font-medium transition-colors"
+                    [class.bg-indigo-600]="selectedGranularity() === g.key"
+                    [class.text-white]="selectedGranularity() === g.key"
+                    [class.text-slate-600]="selectedGranularity() !== g.key"
+                  >
+                    {{ g.label }}
+                  </button>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-6">
+          <div class="min-w-0 rounded-xl bg-white p-6 shadow-sm">
+            <h4 class="text-sm font-semibold text-slate-700">Przepływ w czasie</h4>
+            <p class="mb-3 text-xs text-slate-400">Liczba zdarzeń w przedziale wg etapu</p>
+            <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
+              <div class="flex flex-wrap gap-2">
+                @for (e of events; track e.type) {
+                  <button
+                    type="button"
+                    (click)="toggleEvent(e.type)"
+                    class="flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors"
+                    [class.border-slate-300]="isEventSelected(e.type)"
+                    [class.text-slate-700]="isEventSelected(e.type)"
+                    [class.border-slate-200]="!isEventSelected(e.type)"
+                    [class.text-slate-300]="!isEventSelected(e.type)"
+                  >
+                    <span
+                      class="h-2.5 w-2.5 rounded-full"
+                      [style.background-color]="isEventSelected(e.type) ? e.color : '#cbd5e1'"
+                    ></span>
+                    {{ e.label }}
+                  </button>
+                }
+              </div>
+
+              <button
+                type="button"
+                (click)="toggleThroughputMode()"
+                class="rounded-md border border-slate-200 px-2.5 py-1 text-xs font-medium transition-colors"
+                [class.bg-indigo-600]="throughputMode() === 'area'"
+                [class.text-white]="throughputMode() === 'area'"
+                [class.text-slate-600]="throughputMode() !== 'area'"
+                title="Słupki czytelne przy małej liczbie kubełków; pole (area) lepsze dla gęstych, długich zakresów"
+              >
+                {{ throughputMode() === 'area' ? 'Pole' : 'Słupki' }}
+              </button>
+            </div>
+            <div class="h-72">
+              <canvas
+                baseChart
+                [data]="throughputData()"
+                [type]="throughputChartType()"
+                [options]="throughputOptions"
+              ></canvas>
+            </div>
+          </div>
+
+          <div class="min-w-0 rounded-xl bg-white p-6 shadow-sm">
+            <h4 class="text-sm font-semibold text-slate-700">Czas realizacji wg etapów</h4>
+            <p class="mb-3 text-xs text-slate-400">
+              Średni czas trwania etapu wg momentu jego zakończenia (też zamówienia w toku)
+            </p>
+            <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
+              <div class="flex flex-wrap gap-2">
+                @for (s of stages; track s.key) {
+                  <button
+                    type="button"
+                    (click)="toggleStage(s.key)"
+                    class="flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors"
+                    [class.border-slate-300]="isStageSelected(s.key)"
+                    [class.text-slate-700]="isStageSelected(s.key)"
+                    [class.border-slate-200]="!isStageSelected(s.key)"
+                    [class.text-slate-300]="!isStageSelected(s.key)"
+                  >
+                    <span
+                      class="h-2.5 w-2.5 rounded-full"
+                      [style.background-color]="isStageSelected(s.key) ? s.color : '#cbd5e1'"
+                    ></span>
+                    {{ s.label }}
+                  </button>
+                }
+              </div>
+
+              <button
+                type="button"
+                (click)="toggleLogScale()"
+                class="rounded-md border border-slate-200 px-2.5 py-1 text-xs font-medium transition-colors"
+                [class.bg-indigo-600]="logScale()"
+                [class.text-white]="logScale()"
+                [class.text-slate-600]="!logScale()"
+                title="Skala osi czasu: logarytmiczna pokazuje jednocześnie bardzo małe i bardzo duże wartości"
+              >
+                Skala: {{ logScale() ? 'log' : 'liniowa' }}
+              </button>
+            </div>
+
+            <div class="h-72">
+              <canvas
+                baseChart
+                [data]="leadTimeData()"
+                [type]="'line'"
+                [options]="leadTimeOptions()"
+              ></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6 rounded-xl bg-white p-6 shadow-sm">
+          <h4 class="text-sm font-semibold text-slate-700">Wskaźnik błędów w czasie</h4>
+          <p class="mb-4 text-xs text-slate-400">
+            Odsetek nieudanych prób na etapie: błędy / (błędy + sukcesy) w danym przedziale
+          </p>
+          <div class="h-72">
+            <canvas
+              baseChart
+              [data]="failureRateData()"
+              [type]="'line'"
+              [options]="failureRateOptions"
+            ></canvas>
+          </div>
         </div>
       </div>
     }

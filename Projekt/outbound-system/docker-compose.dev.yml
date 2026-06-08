@@ -236,6 +236,7 @@ services:
       - SSO_CLIENT_ID=${SSO_CLIENT_ID:-}
       - SSO_CLIENT_SECRET=${SSO_CLIENT_SECRET:-}
       - SSO_REDIRECT_URI=${SSO_REDIRECT_URI:-http://localhost:4200/auth/callback}
+      - DASHBOARD_DEMO_DATA=${DASHBOARD_DEMO_DATA:-false}
       - ORDER_GATEWAY_URL=http://order-gateway-service:8081
       - PACKING_SERVICE_URL=http://packing-service:8082
       - PICKING_SERVICE_URL=http://picking-service:8083

@@ -119,3 +119,25 @@ export interface StockItem {
   productId: string;
   quantity: number;
 }
+
+export interface ThroughputPoint {
+  timestamp: number;
+  counts: Partial<Record<SseEventType, number>>;
+}
+
+export interface ThroughputResponse {
+  bucketMs: number;
+  points: ThroughputPoint[];
+}
+
+export interface LeadTimePoint {
+  timestamp: number;
+  completedOrders: number;
+  avgStageSeconds: Record<string, number | null>;
+  p95TotalSeconds: number;
+}
+
+export interface LeadTimeResponse {
+  bucketMs: number;
+  points: LeadTimePoint[];
+}
