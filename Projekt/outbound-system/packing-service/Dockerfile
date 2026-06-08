@@ -10,12 +10,12 @@ COPY build.gradle.kts settings.gradle.kts ./
 COPY common/build.gradle.kts common/
 COPY packing-service/build.gradle.kts packing-service/
 
-RUN ./gradlew :packing-service:dependencies --no-daemon
+RUN --mount=type=cache,target=/root/.gradle ./gradlew :packing-service:dependencies --no-daemon
 
 COPY common/src common/src
 COPY packing-service/src packing-service/src
 
-RUN ./gradlew :packing-service:bootJar -x test --no-daemon
+RUN --mount=type=cache,target=/root/.gradle ./gradlew :packing-service:bootJar -x test --no-daemon
 
 
 FROM eclipse-temurin:21-jre-alpine

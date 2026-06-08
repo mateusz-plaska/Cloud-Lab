@@ -10,12 +10,12 @@ COPY build.gradle.kts settings.gradle.kts ./
 COPY common/build.gradle.kts common/
 COPY reservation-service/build.gradle.kts reservation-service/
 
-RUN ./gradlew :reservation-service:dependencies --no-daemon
+RUN --mount=type=cache,target=/root/.gradle ./gradlew :reservation-service:dependencies --no-daemon
 
 COPY common/src common/src
 COPY reservation-service/src reservation-service/src
 
-RUN ./gradlew :reservation-service:bootJar -x test --no-daemon
+RUN --mount=type=cache,target=/root/.gradle ./gradlew :reservation-service:bootJar -x test --no-daemon
 
 
 FROM eclipse-temurin:21-jre-alpine

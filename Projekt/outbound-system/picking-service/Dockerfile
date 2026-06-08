@@ -10,12 +10,12 @@ COPY build.gradle.kts settings.gradle.kts ./
 COPY common/build.gradle.kts common/
 COPY picking-service/build.gradle.kts picking-service/
 
-RUN ./gradlew :picking-service:dependencies --no-daemon
+RUN --mount=type=cache,target=/root/.gradle ./gradlew :picking-service:dependencies --no-daemon
 
 COPY common/src common/src
 COPY picking-service/src picking-service/src
 
-RUN ./gradlew :picking-service:bootJar -x test --no-daemon
+RUN --mount=type=cache,target=/root/.gradle ./gradlew :picking-service:bootJar -x test --no-daemon
 
 
 FROM eclipse-temurin:21-jre-alpine

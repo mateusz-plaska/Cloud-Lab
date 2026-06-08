@@ -10,12 +10,12 @@ COPY build.gradle.kts settings.gradle.kts ./
 COPY common/build.gradle.kts common/
 COPY shipping-service/build.gradle.kts shipping-service/
 
-RUN ./gradlew :shipping-service:dependencies --no-daemon
+RUN --mount=type=cache,target=/root/.gradle ./gradlew :shipping-service:dependencies --no-daemon
 
 COPY common/src common/src
 COPY shipping-service/src shipping-service/src
 
-RUN ./gradlew :shipping-service:bootJar -x test --no-daemon
+RUN --mount=type=cache,target=/root/.gradle ./gradlew :shipping-service:bootJar -x test --no-daemon
 
 
 FROM eclipse-temurin:21-jre-alpine

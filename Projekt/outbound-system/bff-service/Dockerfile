@@ -10,12 +10,12 @@ COPY build.gradle.kts settings.gradle.kts ./
 COPY common/build.gradle.kts common/
 COPY bff-service/build.gradle.kts bff-service/
 
-RUN ./gradlew :bff-service:dependencies --no-daemon
+RUN --mount=type=cache,target=/root/.gradle ./gradlew :bff-service:dependencies --no-daemon
 
 COPY common/src common/src
 COPY bff-service/src bff-service/src
 
-RUN ./gradlew :bff-service:bootJar -x test --no-daemon
+RUN --mount=type=cache,target=/root/.gradle ./gradlew :bff-service:bootJar -x test --no-daemon
 
 
 FROM eclipse-temurin:21-jre-alpine

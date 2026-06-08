@@ -10,12 +10,12 @@ COPY build.gradle.kts settings.gradle.kts ./
 COPY common/build.gradle.kts common/
 COPY order-gateway-service/build.gradle.kts order-gateway-service/
 
-RUN ./gradlew :order-gateway-service:dependencies --no-daemon
+RUN --mount=type=cache,target=/root/.gradle ./gradlew :order-gateway-service:dependencies --no-daemon
 
 COPY common/src common/src
 COPY order-gateway-service/src order-gateway-service/src
 
-RUN ./gradlew :order-gateway-service:bootJar -x test --no-daemon
+RUN --mount=type=cache,target=/root/.gradle ./gradlew :order-gateway-service:bootJar -x test --no-daemon
 
 
 FROM eclipse-temurin:21-jre-alpine
