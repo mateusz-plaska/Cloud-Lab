@@ -232,6 +232,10 @@ services:
       - RABBITMQ_EXCHANGE=outbound.events
       - JWT_SECRET=c91a813ba3d19c6162dd2c9fac50f7bbfd96adf58d9be7a5afb2e0685c72b47f
       - CORS_ALLOWED_ORIGINS=http://localhost:4200
+      - SSO_ENABLED=${SSO_ENABLED:-false}
+      - SSO_CLIENT_ID=${SSO_CLIENT_ID:-}
+      - SSO_CLIENT_SECRET=${SSO_CLIENT_SECRET:-}
+      - SSO_REDIRECT_URI=${SSO_REDIRECT_URI:-http://localhost:4200/auth/callback}
       - ORDER_GATEWAY_URL=http://order-gateway-service:8081
       - PACKING_SERVICE_URL=http://packing-service:8082
       - PICKING_SERVICE_URL=http://picking-service:8083

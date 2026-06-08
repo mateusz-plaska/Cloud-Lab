@@ -4,6 +4,7 @@ import feign.FeignException;
 import feign.RetryableException;
 import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import lombok.extern.slf4j.Slf4j;
+import org.pwr.cloud.lab.bff.domain.exception.SsoAuthenticationException;
 import org.pwr.cloud.lab.common.domain.exception.DomainConflictException;
 import org.pwr.cloud.lab.common.domain.exception.DomainNotFoundException;
 import org.pwr.cloud.lab.common.domain.exception.DomainRuntimeException;
@@ -28,6 +29,12 @@ public class BffExceptionHandler {
     @ExceptionHandler(value = {BadCredentialsException.class, UsernameNotFoundException.class})
     public ResponseEntity<Map<String, Object>> handleBadCredentials(Exception e) {
         return error(HttpStatus.UNAUTHORIZED, "Invalid username or password");
+    }
+
+    @ExceptionHandler(SsoAuthenticationException.class)
+    public ResponseEntity<Map<String, Object>> handleSsoFailure(SsoAuthenticationException e) {
+        log.warn("SSO login failed: {}", e.getMessage());
+        return error(HttpStatus.UNAUTHORIZED, "SSO login failed");
     }
 
     @ExceptionHandler(DomainNotFoundException.class)
